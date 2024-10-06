@@ -42,13 +42,18 @@ struct FCreateSessionResult
 	UPROPERTY(BlueprintReadWrite)
 	bool bWasSuccessful;
 
-	FCreateSessionResult()
-		: SessionName(NAME_None), bWasSuccessful(false)
-	{}
+	UPROPERTY(BlueprintReadWrite)
+	int32 JoinCode;
 
-	FCreateSessionResult(FName Name, bool bCond)
-		: SessionName(Name), bWasSuccessful(bCond)
-	{}
+	FCreateSessionResult()
+		: SessionName(NAME_None), bWasSuccessful(false), JoinCode(0)
+	{
+	}
+
+	FCreateSessionResult(FName Name, bool bCond, int32 JoinCode)
+		: SessionName(Name), bWasSuccessful(bCond), JoinCode(JoinCode)
+	{
+	}
 };
 
 USTRUCT(BlueprintType)
@@ -149,6 +154,69 @@ struct FFindSessionsResult
 	{}
 };
 
+USTRUCT(BlueprintType)
+struct FLoginResult
+{
+	GENERATED_BODY()
+    
+	UPROPERTY(BlueprintReadOnly)
+	bool bWasSuccessful;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString ErrorMessage;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString UserId;
+
+	FLoginResult()
+		: bWasSuccessful(false)
+	{}
+
+	FLoginResult(bool bSuccess, const FString& InErrorMessage = FString(), const FString& InUserId = FString())
+		: bWasSuccessful(bSuccess), ErrorMessage(InErrorMessage), UserId(InUserId)
+	{}
+};
+
+USTRUCT(BlueprintType)
+struct FJoinSessionResult
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadOnly)
+	bool bWasSuccessful;
+
+	UPROPERTY(BlueprintReadOnly)
+	FString ErrorMessage;
+
+	FJoinSessionResult()
+		: bWasSuccessful(false)
+	{}
+
+	FJoinSessionResult(bool bSuccess, const FString& InErrorMessage = FString())
+		: bWasSuccessful(bSuccess), ErrorMessage(InErrorMessage)
+	{}
+};
+
+USTRUCT(BlueprintType)
+struct FIsValidJoinCodeFormatResult
+{
+	GENERATED_BODY()
+	
+	UPROPERTY(BlueprintReadOnly)
+	bool bIsValid;
+
+	UPROPERTY(BlueprintReadOnly)
+	int32 JoinCode;
+
+	FIsValidJoinCodeFormatResult()
+		: bIsValid(false), JoinCode(0)
+	{}
+
+	FIsValidJoinCodeFormatResult(bool bValid, int32 Code)
+		: bIsValid(bValid), JoinCode(Code)
+	{}
+};
+
 UCLASS()
 class MIMICHUNT_API UEOSSubsystem : public UGameInstanceSubsystem
 {
@@ -156,41 +224,53 @@ class MIMICHUNT_API UEOSSubsystem : public UGameInstanceSubsystem
 public:
 	UEOSSubsystem();
 
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Create Session"))
 	FVoidCoroutine K2_CreateSession(FCreateSessionRequest CreateSessionRequest, FLatentActionInfo LatentInfo, FCreateSessionResult& OutResult);
 	UE5Coro::TCoroutine<FCreateSessionResult> CreateSession(FCreateSessionRequest CreateSessionRequest);
 
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Update Session"))
 	FVoidCoroutine K2_UpdateSession(FLatentActionInfo LatentInfo, FUpdateSessionResult& OutResult);
 	UE5Coro::TCoroutine<FUpdateSessionResult> UpdateSession();
 
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Start Session"))
 	FVoidCoroutine K2_StartSession(FLatentActionInfo LatentInfo, FStartSessionResult& OutResult);
 	UE5Coro::TCoroutine<FStartSessionResult> StartSession();
 
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Destroy Session"))
 	FVoidCoroutine K2_DestroySession(FLatentActionInfo LatentInfo, FDestroySessionResult& OutResult);
 	UE5Coro::TCoroutine<FDestroySessionResult> DestroySession();
 
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Find Sessions"))
 	FVoidCoroutine K2_FindSessions(FFindSessionRequest FindSessionRequest, FLatentActionInfo LatentInfo, FFindSessionsResult& OutResult);
 	UE5Coro::TCoroutine<FFindSessionsResult> FindSessions(FFindSessionRequest FindSessionRequest);
 
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Login"))
+	FVoidCoroutine K2_Login(FLatentActionInfo LatentInfo, FLoginResult& OutResult);
+	UE5Coro::TCoroutine<FLoginResult> Login();
 	
 	void JoinGameSession(const FOnlineSessionSearchResult& SessionResult);
+
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Join Session With Code"))
+	FVoidCoroutine K2_JoinSessionWithCode(int32 JoinCode, FLatentActionInfo LatentInfo, FJoinSessionResult& OutResult);
+	UE5Coro::TCoroutine<FJoinSessionResult> JoinSessionWithCode(int32 JoinCode);
+
+	UFUNCTION(BlueprintCallable)
+	FIsValidJoinCodeFormatResult IsValidJoinCodeFormat(const FString& JoinCode);
 	
 	FCSOnJoinSessionComplete OnJoinGameSessionCompleteEvent;
 
 protected:
-	void OnFindSessionsCompleted(bool Successful);
 	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
+
+	UFUNCTION(BlueprintCallable)
 	bool TryTravelToCurrentSession();
 
 private:
+	bool CreateOrRetrieveDeviceId();
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
-	
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 
 	FOnJoinSessionCompleteDelegate JoinSessionCompleteDelegate;
 	FDelegateHandle JoinSessionCompleteDelegateHandle;
+	int32 CurrentLobbyJoinCode;
 };

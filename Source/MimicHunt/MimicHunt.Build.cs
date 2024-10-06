@@ -19,7 +19,8 @@ public class MimicHunt : ModuleRules
 			"OnlineSubsystem",
 			"OnlineSubsystemEOS",
 			"OnlineSubsystemUtils",
-			"UE5Coro"
+			"UE5Coro",
+			"EOSSDK"
 		});
 		PrivateDefinitions.Add("P2PMODE=1");
 	}
