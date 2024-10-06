@@ -622,6 +622,7 @@ UE5Coro::TCoroutine<FLoginResult> UEOSSubsystem::Login()
 
 void UEOSSubsystem::JoinGameSession(const FOnlineSessionSearchResult& SessionResult)
 {
+	UE_LOG_ONLINE(Log, TEXT("Trying to join the session with the EOS subsystem..."));
 	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
 	if (!sessionInterface.IsValid())
 	{
