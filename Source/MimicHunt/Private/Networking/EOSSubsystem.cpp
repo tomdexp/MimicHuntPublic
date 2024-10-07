@@ -42,22 +42,19 @@ UE5Coro::TCoroutine<FCreateSessionResult> UEOSSubsystem::CreateSession(FCreateSe
 
 	UE_LOG_ONLINE(Log, TEXT("Creating session settings..."));
     LastSessionSettings = MakeShareable(new FOnlineSessionSettings());
-    LastSessionSettings->NumPrivateConnections = 0;
-    LastSessionSettings->NumPublicConnections = CreateSessionRequest.NumPublicConnections;
-    LastSessionSettings->bAllowInvites = false;
-    LastSessionSettings->bAllowJoinInProgress = true;
-    LastSessionSettings->bAllowJoinViaPresence = false;
-    LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
-    LastSessionSettings->bIsDedicated = false;
-    LastSessionSettings->bUsesPresence = false;
-    LastSessionSettings->bIsLANMatch = CreateSessionRequest.bIsLANMatch;
-    LastSessionSettings->bShouldAdvertise = true;
-
-    LastSessionSettings->Set(FName("SETTING_MAPNAME"), FString("Your Level Name"), EOnlineDataAdvertisementType::ViaOnlineService);
-
-	// Generate a 4-digit random number for the session ID
-	const int32 JoinCode = FMath::RandRange(1000, 9999);
-	LastSessionSettings->Set(SESSION_SETTING_JOIN_CODE, JoinCode, EOnlineDataAdvertisementType::ViaOnlineService);
+	LastSessionSettings->NumPublicConnections = 2; //We will test our sessions with 2 players to keep things simple
+	LastSessionSettings->bShouldAdvertise = true; //This creates a public match and will be searchable.
+	LastSessionSettings->bUsesPresence = false;   //No presence on dedicated server. This requires a local user.
+	LastSessionSettings->bAllowJoinViaPresence = false;
+	LastSessionSettings->bAllowJoinViaPresenceFriendsOnly = false;
+	LastSessionSettings->bAllowInvites = false;    //Allow inviting players into session. This requires presence and a local user. 
+	LastSessionSettings->bAllowJoinInProgress = false; //Once the session is started, no one can join.
+	LastSessionSettings->bIsDedicated = false; //Session created on dedicated server.
+	LastSessionSettings->bUseLobbiesIfAvailable = true; //For P2P we will use a lobby instead of a session
+	LastSessionSettings->bUseLobbiesVoiceChatIfAvailable = false; //We disable voice
+	LastSessionSettings->bUsesStats = true; //Needed to keep track of player stats.
+	const int32 JoinCode = FMath::RandRange(1000, 9999); // Generate a 4-digit random number for the session ID
+	LastSessionSettings->Set(SESSION_SETTING_JOIN_CODE, JoinCode, EOnlineDataAdvertisementType::ViaOnlineService); // Add the join code to the session settings
 	CurrentLobbyJoinCode = JoinCode;
 	
 	UE_LOG_ONLINE(Log, TEXT("Session settings created!"));
@@ -106,8 +103,18 @@ UE5Coro::TCoroutine<FCreateSessionResult> UEOSSubsystem::CreateSession(FCreateSe
     // Clean up the delegate
     SessionInterface->ClearOnCreateSessionCompleteDelegate_Handle(DelegateHandle);
 
+	if (!bWasSuccessful)
+	{
+		UE_LOG_ONLINE(Log, TEXT("Failed to create the session!"));
+		co_return FCreateSessionResult{ NAME_None, false, 0};
+	}
     // Return the result
 	UE_LOG_ONLINE(Log, TEXT("Session created successfully with the join code %d!"), CurrentLobbyJoinCode);
+	FString Map = "Game/MimicHunt/Content/MimicHunt/Maps/L_Hub?listen"; // Hardcoding map name here, should be passed by parameter
+	FURL TravelURL;
+	TravelURL.Map = Map;
+	GetWorld()->Listen(TravelURL);
+	SetupLobbyNotifications(); // Setup our listeners for lobby notification events 
     co_return FCreateSessionResult{ SessionName, bWasSuccessful, CurrentLobbyJoinCode};
 }
 
@@ -327,8 +334,7 @@ UE5Coro::TCoroutine<FFindSessionsResult> UEOSSubsystem::FindSessions(FFindSessio
     LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
     LastSessionSearch->MaxSearchResults = FindSessionRequest.MaxSearchResults;
     LastSessionSearch->bIsLanQuery = FindSessionRequest.bIsLANQuery;
-
-    LastSessionSearch->QuerySettings.Set(SEARCH_PRESENCE, true, EOnlineComparisonOp::Equals);
+	LastSessionSearch->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
 
     const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
     if (!SessionInterface->FindSessions(*LocalPlayer->GetPreferredUniqueNetId(), LastSessionSearch.ToSharedRef()))
@@ -620,26 +626,76 @@ UE5Coro::TCoroutine<FLoginResult> UEOSSubsystem::Login()
 	}*/
 }
 
-void UEOSSubsystem::JoinGameSession(const FOnlineSessionSearchResult& SessionResult)
+UE5Coro::TCoroutine<FJoinSessionResult> UEOSSubsystem::JoinGameSession(const FOnlineSessionSearchResult& SessionResult)
 {
-	UE_LOG_ONLINE(Log, TEXT("Trying to join the session with the EOS subsystem..."));
-	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
-	if (!sessionInterface.IsValid())
+    UE_LOG_ONLINE(Log, TEXT("Trying to join the session with the EOS subsystem..."));
+    const IOnlineSessionPtr SessionInterface = Online::GetSessionInterface(GetWorld());
+    if (!SessionInterface.IsValid())
+    {
+        UE_LOG_ONLINE(Log, TEXT("Session interface is not valid! Cannot join session."));
+        co_return FJoinSessionResult(false, FString("Session interface is not valid!"));
+    }
+
+    // Variables to capture the delegate results
+    EOnJoinSessionCompleteResult::Type JoinResult = EOnJoinSessionCompleteResult::UnknownError;
+
+    // Create an awaitable event
+    UE5Coro::FAwaitableEvent AwaitableEvent;
+
+    // Bind the delegate
+    FOnJoinSessionCompleteDelegate OnJoinSessionCompleteDelegate;
+    OnJoinSessionCompleteDelegate.BindLambda([&](FName SessionName, EOnJoinSessionCompleteResult::Type Result)
+    {
+        // Capture the result
+        JoinResult = Result;
+        // Trigger the event to resume the coroutine
+        AwaitableEvent.Trigger();
+    });
+
+    // Add the delegate
+    FDelegateHandle DelegateHandle = SessionInterface->AddOnJoinSessionCompleteDelegate_Handle(OnJoinSessionCompleteDelegate);
+
+    const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
+    if (!SessionInterface->JoinSession(*LocalPlayer->GetPreferredUniqueNetId(), NAME_GameSession, SessionResult))
+    {
+        // Clean up the delegate
+        SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(DelegateHandle);
+
+        UE_LOG_ONLINE(Log, TEXT("Failed to join session!"));
+        co_return FJoinSessionResult(false, FString("Failed to join session"));
+    }
+
+    // Await the event (suspends the coroutine until the event is triggered)
+    co_await AwaitableEvent;
+
+    // Clean up the delegate
+    SessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(DelegateHandle);
+
+	// FAIL
+	if(JoinResult != EOnJoinSessionCompleteResult::Success)
 	{
-		OnJoinGameSessionCompleteEvent.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
-		return;
+		UE_LOG_ONLINE(Log, TEXT("Failed to join session with result %d"), static_cast<int32>(JoinResult));
+		co_return FJoinSessionResult(false, FString("Failed to join session"));
 	}
-
-	JoinSessionCompleteDelegateHandle =
-		sessionInterface->AddOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegate);
-
-	const ULocalPlayer* localPlayer = GetWorld()->GetFirstLocalPlayerFromController();
-	if (!sessionInterface->JoinSession(*localPlayer->GetPreferredUniqueNetId(), NAME_GameSession, SessionResult))
+    // SUCCESS
+    UE_LOG_ONLINE(Log, TEXT("Join session successful!"));
+    FString ConnectString;
+	//Ensure the connection string is resolvable and store the info in ConnectString and in SessionToJoin
+	if (SessionInterface->GetResolvedConnectString(SessionResult, NAME_GamePort, ConnectString))
 	{
-		sessionInterface->ClearOnJoinSessionCompleteDelegate_Handle(JoinSessionCompleteDelegateHandle);
-
-		OnJoinGameSessionCompleteEvent.Broadcast(EOnJoinSessionCompleteResult::UnknownError);
+		UE_LOG_ONLINE(Log, TEXT("Resolved connect string: %s"), *ConnectString);
+		if (APlayerController* Controller = GetWorld()->GetFirstPlayerController())
+		{
+			UE_LOG_ONLINE(Log, TEXT("Travelling to the session as client..."));
+			Controller->ClientTravel(ConnectString, TRAVEL_Absolute);
+			SetupLobbyNotifications();
+			co_return FJoinSessionResult(true, FString());
+		}
+		UE_LOG_ONLINE(Log, TEXT("Failed to get the player controller!"));
+		co_return FJoinSessionResult(false, FString("Failed to get the player controller"));
 	}
+    UE_LOG_ONLINE(Log, TEXT("Failed to resolve connect string!"));
+    co_return FJoinSessionResult(false, FString("Failed to resolve connect string"));
 }
 
 FVoidCoroutine UEOSSubsystem::K2_JoinSessionWithCode(int32 JoinCode, FLatentActionInfo LatentInfo,
@@ -655,7 +711,7 @@ UE5Coro::TCoroutine<FJoinSessionResult> UEOSSubsystem::JoinSessionWithCode(int32
     if (!SessionInterface.IsValid())
     {
 		UE_LOG_ONLINE(Log, TEXT("Session interface is not valid! Cannot find sessions."));
-    	co_return FJoinSessionResult(false);
+    	co_return FJoinSessionResult(false, FString("Session interface is not valid!"));
     }
 
     // Variables to capture the delegate results
@@ -684,8 +740,9 @@ UE5Coro::TCoroutine<FJoinSessionResult> UEOSSubsystem::JoinSessionWithCode(int32
 
     // Set up the session search
     LastSessionSearch = MakeShareable(new FOnlineSessionSearch());
+	LastSessionSearch->QuerySettings.Set(SEARCH_LOBBIES, true, EOnlineComparisonOp::Equals);
     LastSessionSearch->QuerySettings.Set(SESSION_SETTING_JOIN_CODE, JoinCode, EOnlineComparisonOp::Equals);
-
+	
     const ULocalPlayer* LocalPlayer = GetWorld()->GetFirstLocalPlayerFromController();
     if (!SessionInterface->FindSessions(*LocalPlayer->GetPreferredUniqueNetId(), LastSessionSearch.ToSharedRef()))
     {
@@ -718,13 +775,10 @@ UE5Coro::TCoroutine<FJoinSessionResult> UEOSSubsystem::JoinSessionWithCode(int32
 		UE_LOG_ONLINE(Log, TEXT("Multiple sessions found with the join code %d"), JoinCode);
 		co_return FJoinSessionResult(false, FString("Multiple sessions found with the join code"));
 	}
-	if (SearchResults.Num() == 1)
-	{
-		UE_LOG_ONLINE(Log, TEXT("Found session with join code %d successfully"), JoinCode);
-		JoinGameSession(SearchResults[0]);
-	}
+	
 	UE_LOG_ONLINE(Log, TEXT("Found session with join code %d successfully"), JoinCode);
-    co_return FJoinSessionResult(bWasSuccessful);
+	auto result = co_await JoinGameSession(SearchResults[0]);
+	co_return result;
 }
 
 FIsValidJoinCodeFormatResult UEOSSubsystem::IsValidJoinCodeFormat(const FString& JoinCode)
@@ -753,22 +807,27 @@ void UEOSSubsystem::OnJoinSessionCompleted(FName SessionName, EOnJoinSessionComp
 	OnJoinGameSessionCompleteEvent.Broadcast(Result);
 }
 
-bool UEOSSubsystem::TryTravelToCurrentSession()
+void UEOSSubsystem::SetupLobbyNotifications()
 {
-	UE_LOG_ONLINE(Log, TEXT("Trying to travel to the current session..."));
-	const IOnlineSessionPtr sessionInterface = Online::GetSessionInterface(GetWorld());
-	if (!sessionInterface.IsValid())
-	{
-		return false;
-	}
+	UE_LOG_ONLINE(Log, TEXT("Setting up lobby notifications..."));
+	// Tutorial 7: EOS Lobbies are great as there are notifications sent for our backend when there are changes to lobbies (ex: Participant Joins/Leaves, lobby or lobby member data is updated, etc...) 
+	IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld());
+	IOnlineSessionPtr Session = Subsystem->GetSessionInterface();
+	// In this tutorial we're only giving an example of a notification for when a participant joins/leaves the lobby. The approach is similar for other notifications. 
+	Session->AddOnSessionParticipantsChangeDelegate_Handle(FOnSessionParticipantsChangeDelegate::CreateUObject(
+		this,
+		&ThisClass::HandleLobbyParticipantChanged));
+	UE_LOG_ONLINE(Log, TEXT("Lobby notifications set up successfully!"));
+}
 
-	FString connectString;
-	if (!sessionInterface->GetResolvedConnectString(NAME_GameSession, connectString))
+void UEOSSubsystem::HandleLobbyParticipantChanged(FName EOSLobbyName, const FUniqueNetId& UniqueNetId, bool bJoined)
+{
+	if (bJoined)
 	{
-		return false;
+		UE_LOG_ONLINE(Log, TEXT("A player has joined Lobby: %s"), *EOSLobbyName.ToString());
 	}
-
-	APlayerController* playerController = GetWorld()->GetFirstPlayerController();
-	playerController->ClientTravel(connectString, TRAVEL_Absolute);
-	return true;
+	else
+	{
+		UE_LOG_ONLINE(Log, TEXT("A player has left Lobby: %s"), *EOSLobbyName.ToString());
+	}
 }

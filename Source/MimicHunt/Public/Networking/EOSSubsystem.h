@@ -248,7 +248,7 @@ public:
 	FVoidCoroutine K2_Login(FLatentActionInfo LatentInfo, FLoginResult& OutResult);
 	UE5Coro::TCoroutine<FLoginResult> Login();
 	
-	void JoinGameSession(const FOnlineSessionSearchResult& SessionResult);
+	UE5Coro::TCoroutine<FJoinSessionResult> JoinGameSession(const FOnlineSessionSearchResult& SessionResult);
 
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo, DisplayName = "Join Session With Code"))
 	FVoidCoroutine K2_JoinSessionWithCode(int32 JoinCode, FLatentActionInfo LatentInfo, FJoinSessionResult& OutResult);
@@ -259,14 +259,15 @@ public:
 	
 	FCSOnJoinSessionComplete OnJoinGameSessionCompleteEvent;
 
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	int32 GetLobbyJoinCode() const { return CurrentLobbyJoinCode; }
+
 protected:
 	void OnJoinSessionCompleted(FName SessionName, EOnJoinSessionCompleteResult::Type Result);
 
-	UFUNCTION(BlueprintCallable)
-	bool TryTravelToCurrentSession();
-
 private:
-	bool CreateOrRetrieveDeviceId();
+	void HandleLobbyParticipantChanged(FName EOSLobbyName, const FUniqueNetId& UniqueNetId, bool bJoined);
+	void SetupLobbyNotifications();
 	TSharedPtr<FOnlineSessionSettings> LastSessionSettings;
 	TSharedPtr<FOnlineSessionSearch> LastSessionSearch;
 
