@@ -28,6 +28,4 @@ public:
 	void OnRep_CurrentOnlineState();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
-
-	virtual void Tick(float DeltaSeconds) override;
 };

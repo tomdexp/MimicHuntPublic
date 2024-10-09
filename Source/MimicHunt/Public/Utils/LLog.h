@@ -55,18 +55,19 @@
 
 // Use these to spam log messages that replace the previous one of the same key.
 // __LINE__ is a convenient key.
-#define LL_DBG_KEY(key, message, ...) do { LL_IF_DBG() LLog::LogCore(          \
-    LLog::ELogLevel::Debug  , key, L##message, ##__VA_ARGS__); } while (false)
-#define LL_WRN_KEY(key, message, ...) do { LL_IF_WRN() LLog::LogCore(          \
-    LLog::ELogLevel::Warning, key, L##message, ##__VA_ARGS__); } while (false)
-#define LL_ERR_KEY(key, message, ...) do { LL_IF_ERR()  LLog::LogCore(         \
-    LLog::ELogLevel::Error  , key, L##message, ##__VA_ARGS__); } while (false)
+#define LL_DBG_KEY(WorldContextObject, key, message, ...) do { LL_IF_DBG() LLog::LogCore(          \
+WorldContextObject, LLog::ELogLevel::Debug  , key, L##message, ##__VA_ARGS__); } while (false)
+#define LL_WRN_KEY(WorldContextObject, key, message, ...) do { LL_IF_WRN() LLog::LogCore(          \
+WorldContextObject, LLog::ELogLevel::Warning, key, L##message, ##__VA_ARGS__); } while (false)
+#define LL_ERR_KEY(WorldContextObject, key, message, ...) do { LL_IF_ERR()  LLog::LogCore(         \
+WorldContextObject, LLog::ELogLevel::Error  , key, L##message, ##__VA_ARGS__); } while (false)
 #endif
 
 // Use these to Just Print Stuff™ without caring about keys.
-#define LL_DBG(message, ...) LL_DBG_KEY((uint64)-1, message, ##__VA_ARGS__)
-#define LL_WRN(message, ...) LL_WRN_KEY((uint64)-1, message, ##__VA_ARGS__)
-#define LL_ERR(message, ...) LL_ERR_KEY((uint64)-1, message, ##__VA_ARGS__)
+#define LL_DBG(WorldContextObject, message, ...) LL_DBG_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
+#define LL_WRN(WorldContextObject, message, ...) LL_WRN_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
+#define LL_ERR(WorldContextObject, message, ...) LL_ERR_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
+
 
 #pragma region Implementation
 
@@ -216,7 +217,7 @@ FString FormatMessage(std::wformat_string<TFormatted<A>...> format, A&&... args)
 }
 
 template<typename... A>
-void LogCore(ELogLevel level, uint64 key,
+void LogCore(UObject* WorldContextObject, ELogLevel level, uint64 key,
              std::wformat_string<TFormatted<A>...> format, A&&... args)
 {
     DEFINE_LOG_CATEGORY_STATIC(LLog, Display, Display);
@@ -224,9 +225,9 @@ void LogCore(ELogLevel level, uint64 key,
 
     // Determine if the instance is Host or Client
     FString Prefix;
-    if (GEngine)
+    if (GEngine && WorldContextObject)
     {
-        UWorld* World = GEngine->GetWorld();
+        UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull);
         if (World)
         {
             ENetMode NetMode = World->GetNetMode();
@@ -240,7 +241,7 @@ void LogCore(ELogLevel level, uint64 key,
                 }
                 else if (NetMode == NM_Client)
                 {
-                    // Use PIEInstance as the client identifier
+                    // Use PIEInstanceID as the client identifier
                     int32 PIEInstanceID = WorldContext->PIEInstance;
                     Prefix = FString::Printf(TEXT("[CLIENT %d] : "), PIEInstanceID);
                 }
@@ -261,10 +262,10 @@ void LogCore(ELogLevel level, uint64 key,
     }
     else
     {
-        Prefix = TEXT("[NO ENGINE] : ");
+        Prefix = TEXT("[NO ENGINE OR CONTEXT] : ");
     }
     message = Prefix + message;
-    
+
     float ttl; FColor color; FVector2D scale;
     switch (level)
     {
@@ -279,7 +280,7 @@ void LogCore(ELogLevel level, uint64 key,
             UE_LOG(LLog, Error, TEXT("%s"), *message);
             ttl = 60; color = FColor::Red; scale = FVector2D(2); break;
     }
-    if (GEngine) [[likely]]
+    if (GEngine)
         GEngine->AddOnScreenDebugMessage(key, ttl, color, message, true, scale);
 }
 }
