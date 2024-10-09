@@ -42,7 +42,14 @@
 #define LL_ERR_KEY(...)   static_assert(true)
 #else
 // Add to the top of a .cpp file to define a cvar controlling the macros there.
-// The default debug level is set to 1 = warnings and errors only.
+// The default debug level is set to
+// 0 = Nothing
+// 1 = warnings and errors only.
+// 2 = debug, warning and errors
+// To use, open the console and write :
+// Llog.$cvar (to get the current level)
+// Llog.$cvar 1 (to set the log level of this module to warnings and errors only
+// Llog.$cvar 2 (to set the log level of this module to debug, warnings and errors)
 #define LL_FILE_CVAR(cvar) namespace { TAutoConsoleVariable<int>               \
     _thisFileDebugLevel(TEXT("LLog." #cvar), 2, TEXT(#cvar " debug level."),   \
                         ECVF_Cheat); } static_assert(true)
@@ -64,6 +71,7 @@ WorldContextObject, LLog::ELogLevel::Error  , key, L##message, ##__VA_ARGS__); }
 #endif
 
 // Use these to Just Print Stuff™ without caring about keys.
+// Example in MHGameState.cpp : LL_DBG(this,"AMHGameState::OnRep_CurrentOnlineState : Current Online State: {0}", CurrentOnlineState);
 #define LL_DBG(WorldContextObject, message, ...) LL_DBG_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
 #define LL_WRN(WorldContextObject, message, ...) LL_WRN_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
 #define LL_ERR(WorldContextObject, message, ...) LL_ERR_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
@@ -271,7 +279,7 @@ void LogCore(UObject* WorldContextObject, ELogLevel level, uint64 key,
     {
         case ELogLevel::Debug:
             UE_LOG(LLog, Display, TEXT("%s"), *message);
-            ttl = 2; color = FColor::Cyan; scale = FVector2D(1); break;
+            ttl = 3; color = FColor::Cyan; scale = FVector2D(1); break;
         case ELogLevel::Warning:
             UE_LOG(LLog, Warning, TEXT("%s"), *message);
             ttl = 10; color = FColor::Orange; scale = FVector2D(1.25); break;
