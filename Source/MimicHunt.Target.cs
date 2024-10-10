@@ -10,7 +10,7 @@ public class MimicHuntTarget : TargetRules
 		Type = TargetType.Game;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
-		bUseUnityBuild = false;
+		//bUseUnityBuild = false;
 		ExtraModuleNames.Add("MimicHunt");
 	}
 }
