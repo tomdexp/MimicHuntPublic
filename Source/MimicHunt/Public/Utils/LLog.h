@@ -1,24 +1,3 @@
-// Copyright © Laura Andelare.
-//
-// LLog is free software. It comes without any warranty, to the extent permitted
-// by applicable law. You can redistribute it and/or modify it under the terms
-// of the Do What The Fuck You Want To Public License, Version 2, as published
-// by Sam Hocevar:
-//
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//                    Version 2, December 2004
-//
-// Copyright (C) 2004 Sam Hocevar <sam@hocevar.net>
-//
-// Everyone is permitted to copy and distribute verbatim or modified
-// copies of this license document, and changing it is allowed as long
-// as the name is changed.
-//
-//            DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE
-//   TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION
-//
-//  0. You just DO WHAT THE FUCK YOU WANT TO.
-
 #pragma once
 
 #include <concepts>
@@ -33,7 +12,7 @@
 #include "Misc/CoreMiscDefines.h"
 
 #if UE_BUILD_SHIPPING
-#define LL_FILE_CVAR(...) static_assert(true)
+#define LL_FILE_CVAR(...)
 #define LL_IF_DBG()       if constexpr (false)
 #define LL_IF_WRN()       if constexpr (false)
 #define LL_IF_ERR()       if constexpr (false)
@@ -44,23 +23,32 @@
 // Add to the top of a .cpp file to define a cvar controlling the macros there.
 // The default debug level is set to
 // 0 = Nothing
-// 1 = warnings and errors only.
-// 2 = debug, warning and errors
-// To use, open the console and write :
-// Llog.$cvar (to get the current level)
-// Llog.$cvar 1 (to set the log level of this module to warnings and errors only
-// Llog.$cvar 2 (to set the log level of this module to debug, warnings and errors)
-#define LL_FILE_CVAR(cvar) namespace { TAutoConsoleVariable<int>               \
-    _thisFileDebugLevel(TEXT("LLog." #cvar), 2, TEXT(#cvar " debug level."),   \
-                        ECVF_Cheat); } static_assert(true)
+// 1 = Warnings and errors only.
+// 2 = Debug, warnings, and errors
+// To use, open the console and write:
+// LLog.$cvar (to get the current level)
+// LLog.$cvar 1 (to set the log level of this module to warnings and errors only)
+// LLog.$cvar 2 (to set the log level of this module to debug, warnings, and errors)
+#define LL_FILE_CVAR(cvar) \
+    inline TAutoConsoleVariable<int>& LL_THIS_FILE_DEBUG_LEVEL() \
+    { \
+        static TAutoConsoleVariable<int> instance( \
+            TEXT("LLog." #cvar), \
+            2, \
+            TEXT(#cvar " debug level."), \
+            ECVF_Cheat \
+        ); \
+        return instance; \
+    } \
+    static_assert(true)
 
 // Use as if() replacements to, e.g., debug draw based on the cvar.
 // Suggested .clang-format: IfMacros: ["LL_IF_DBG", "LL_IF_WRN", "LL_IF_ERR"]
-#define LL_IF_DBG() if (_thisFileDebugLevel.GetValueOnAnyThread() >= 2)
-#define LL_IF_WRN() if (_thisFileDebugLevel.GetValueOnAnyThread() >= 1)
-#define LL_IF_ERR() if (_thisFileDebugLevel.GetValueOnAnyThread() >= 0)
+#define LL_IF_DBG() if (LL_THIS_FILE_DEBUG_LEVEL().GetValueOnAnyThread() >= 2)
+#define LL_IF_WRN() if (LL_THIS_FILE_DEBUG_LEVEL().GetValueOnAnyThread() >= 1)
+#define LL_IF_ERR() if (LL_THIS_FILE_DEBUG_LEVEL().GetValueOnAnyThread() >= 0)
 
-// Use these to spam log messages that replace the previous one of the same key.
+// Use these to log messages that replace the previous one of the same key.
 // __LINE__ is a convenient key.
 #define LL_DBG_KEY(WorldContextObject, key, message, ...) do { LL_IF_DBG() LLog::LogCore(          \
 WorldContextObject, LLog::ELogLevel::Debug  , key, L##message, ##__VA_ARGS__); } while (false)
@@ -70,12 +58,10 @@ WorldContextObject, LLog::ELogLevel::Warning, key, L##message, ##__VA_ARGS__); }
 WorldContextObject, LLog::ELogLevel::Error  , key, L##message, ##__VA_ARGS__); } while (false)
 #endif
 
-// Use these to Just Print Stuff™ without caring about keys.
-// Example in MHGameState.cpp : LL_DBG(this,"AMHGameState::OnRep_CurrentOnlineState : Current Online State: {0}", CurrentOnlineState);
+// Use these to just print messages without caring about keys.
 #define LL_DBG(WorldContextObject, message, ...) LL_DBG_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
 #define LL_WRN(WorldContextObject, message, ...) LL_WRN_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
 #define LL_ERR(WorldContextObject, message, ...) LL_ERR_KEY(WorldContextObject, (uint64)-1, message, ##__VA_ARGS__)
-
 
 #pragma region Implementation
 
@@ -156,7 +142,7 @@ auto FormatArgument(T&& value) // std::format doesn't like if this returns declt
             str = std::forward<T>(value)->c_str();
         else if constexpr (requires { str = std::forward<T>(value).c_str(); })
             str = std::forward<T>(value).c_str();
-        else if constexpr (TIsUEnumClass<V>::Value) // won't work for legacy UENUMs
+        else if constexpr (TIsUEnumClass<V>::Value) // Won't work for legacy UENUMs
             str = StaticEnum<V>()->GetNameByValue(static_cast<int64>(value)).ToString();
         else if constexpr (TIsTEnumAsByte<V>::Value)
             str = StaticEnum<typename V::EnumType>()->GetNameByValue(value.GetIntValue()).ToString();
@@ -245,32 +231,32 @@ void LogCore(UObject* WorldContextObject, ELogLevel level, uint64 key,
             {
                 if (NetMode == NM_ListenServer || NetMode == NM_DedicatedServer)
                 {
-                    Prefix = TEXT("[HOST] : ");
+                    Prefix = TEXT("[HOST]: ");
                 }
                 else if (NetMode == NM_Client)
                 {
                     // Use PIEInstanceID as the client identifier
                     int32 PIEInstanceID = WorldContext->PIEInstance;
-                    Prefix = FString::Printf(TEXT("[CLIENT %d] : "), PIEInstanceID);
+                    Prefix = FString::Printf(TEXT("[CLIENT %d]: "), PIEInstanceID);
                 }
                 else
                 {
-                    Prefix = TEXT("[STANDALONE] : ");
+                    Prefix = TEXT("[STANDALONE]: ");
                 }
             }
             else
             {
-                Prefix = TEXT("[NO WORLD CONTEXT] : ");
+                Prefix = TEXT("[NO WORLD CONTEXT]: ");
             }
         }
         else
         {
-            Prefix = TEXT("[NO WORLD] : ");
+            Prefix = TEXT("[NO WORLD]: ");
         }
     }
     else
     {
-        Prefix = TEXT("[NO ENGINE OR CONTEXT] : ");
+        Prefix = TEXT("[NO ENGINE OR CONTEXT]: ");
     }
     message = Prefix + message;
 
