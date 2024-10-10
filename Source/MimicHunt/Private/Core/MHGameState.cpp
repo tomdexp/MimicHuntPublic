@@ -10,6 +10,7 @@ LL_FILE_CVAR(GameState);
 AMHGameState::AMHGameState()
 {
 	CurrentOnlineState = Undefined;
+	TestCounter = 0;
 }
 
 void AMHGameState::SetOnlineState(EOnlineState NewOnlineState)
@@ -43,7 +44,8 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	LL_DBG(this,"AMHGameState::AddPlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
-
+	TestCounter++;
+	LL_DBG(this,"AMHGameState::AddPlayerState : TestCounter is now {0}", TestCounter);
 	if (AMHPlayerState* MHPlayerState = Cast<AMHPlayerState>(PlayerState))
 	{
 		MHPlayerState->OnPlayerReadyInLobbyChanged.AddDynamic(this, &AMHGameState::AnyPlayerReadyInLobbyChanged);
