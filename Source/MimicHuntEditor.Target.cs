@@ -10,6 +10,7 @@ public class MimicHuntEditorTarget : TargetRules
 		Type = TargetType.Editor;
 		DefaultBuildSettings = BuildSettingsVersion.V5;
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
+		bUseUnityBuild = false;
 		ExtraModuleNames.Add("MimicHunt");
 	}
 }
