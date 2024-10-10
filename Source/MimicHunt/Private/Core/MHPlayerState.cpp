@@ -6,7 +6,7 @@
 LL_FILE_CVAR(PlayerState);
 
 
-void AMHPlayerState::NetMulticast_SetIsReadyInLobby_Implementation(bool bNewIsReadyInLobby)
+void AMHPlayerState::Server_SetIsReadyInLobby_Implementation(bool bNewIsReadyInLobby)
 {
 	if (bIsReadyInLobby != bNewIsReadyInLobby)
 	{
@@ -16,14 +16,14 @@ void AMHPlayerState::NetMulticast_SetIsReadyInLobby_Implementation(bool bNewIsRe
 	}
 }
 
-bool AMHPlayerState::NetMulticast_SetIsReadyInLobby_Validate(bool bNewIsReadyInLobby)
+bool AMHPlayerState::Server_SetIsReadyInLobby_Validate(bool bNewIsReadyInLobby)
 {
 	return true;
 }
 
 void AMHPlayerState::OnRep_IsReadyInLobby()
 {
-	LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Player {0} ready in lobby = {1}", GetPlayerName(), bIsReadyInLobby);
+	//LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Player {0} ready in lobby = {1}", GetPlayerName(), bIsReadyInLobby);
 	LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Broadcast OnPlayerReadyInLobbyChanged with : {0}", bIsReadyInLobby);
 	OnPlayerReadyInLobbyChanged.Broadcast(bIsReadyInLobby);
 }
