@@ -15,8 +15,8 @@ public:
 	bool bIsReadyInLobby;
 
 	// TODO : INVESTIGATE NETMULTICAST VS SERVER VS CLIENT RPC
-	UFUNCTION(BlueprintCallable, NetMulticast, Reliable, WithValidation)
-	void NetMulticast_SetIsReadyInLobby(bool bNewIsReadyInLobby);
+	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
+	void Server_SetIsReadyInLobby(bool bNewIsReadyInLobby);
 	
 	UFUNCTION()
 	void OnRep_IsReadyInLobby();
