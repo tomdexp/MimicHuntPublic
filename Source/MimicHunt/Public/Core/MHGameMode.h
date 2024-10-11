@@ -5,8 +5,7 @@
 #include "MHGameMode.generated.h"
 
 /**
- * This is the GameMode used for the real gameplay (lobby and in game).
- * It's supposed to be inherited with a blueprint
+ * This is the GameMode inherited by all the GameMode of the game
  * WARNING : IT EXIST ONLY THE SERVER
  */
 UCLASS()
