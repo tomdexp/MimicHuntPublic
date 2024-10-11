@@ -2,3 +2,10 @@
 
 
 #include "Core/MHPlayerController.h"
+
+void AMHPlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	// TODO: Add input bindings
+}
