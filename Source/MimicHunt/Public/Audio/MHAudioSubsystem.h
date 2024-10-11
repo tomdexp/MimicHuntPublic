@@ -20,4 +20,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void ExampleFunction();
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void SetVoiceChatUserID(const int32 UserID);
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void SetVoiceChatRoomID(const int32 RoomID);
 };

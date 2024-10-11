@@ -1,14 +1,29 @@
 #include "Audio/MHAudioSubsystem.h"
 
-DEFINE_LOG_CATEGORY(MHAudio);
+#include "TencentGMEDevice.h"
+#include "Utils/LLog.h"
+
+LL_FILE_CVAR(MHaudio);
 
 void UMHAudioSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	UE_LOG(MHAudio, Log, TEXT("MimicHunt Audio Subsystem initialized"));
+	LL_DBG(this, "Audio Susbsystem initialized");
 }
 
 void UMHAudioSubsystem::ExampleFunction()
 {
-	UE_LOG(MHAudio, Log, TEXT("ExampleFunction called"));
+	LL_DBG(this, "Example function called");
+}
+
+void UMHAudioSubsystem::SetVoiceChatUserID(const int32 UserID)
+{
+	LL_DBG(this, "SetVoiceChatUserID called with UserID: %s", UserID);
+	FTencentGMEDevice::SetUserID(FString::FromInt(UserID));
+}
+
+void UMHAudioSubsystem::SetVoiceChatRoomID(const int32 RoomID)
+{
+	LL_DBG(this, "SetVoiceChatRoomID called with RoomID: %s", RoomID);
+	FTencentGMEDevice::SetRoomID(FString::FromInt(RoomID));
 }
