@@ -25,5 +25,11 @@ public:
 	void SetVoiceChatUserID(const int32 UserID);
 
 	UFUNCTION(BlueprintCallable, Category = "Audio")
-	void SetVoiceChatRoomID(const int32 RoomID);
+	void SetVoiceChatRoomID(const FString RoomID);
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void StartRecordingWithRecognition(const FString& speechLanguage);
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void GetGMEMessage(int& localUTCTime, int& messageType, int& code, FString& message1, FString& message2);
 };
