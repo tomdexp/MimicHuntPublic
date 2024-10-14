@@ -25,7 +25,8 @@ public class MimicHunt : ModuleRules
 			"Wwise",
 			"GameplayAbilities",
 			"GameplayTags",
-			"GameplayTasks"
+			"GameplayTasks",
+			"UMG"
 		});
 	}
 }

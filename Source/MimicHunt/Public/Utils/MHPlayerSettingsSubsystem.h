@@ -5,6 +5,7 @@
 #include "Subsystems/GameInstanceSubsystem.h"
 #include "MHPlayerSettingsSubsystem.generated.h"
 
+class UCheckBox;
 class UMHPlayerSettingsSaveGame;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FPlayerSettingsChanged);
@@ -60,6 +61,13 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void SetControllerSensitivity(float Sensitivity);
 
+	/************************************************************************/
+	/* 							UI BINDINGS							        */
+	/************************************************************************/
+	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	void BindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox);
+	
+	
 private:
 	void LoadSettings();
 	void SaveSettings();

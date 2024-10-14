@@ -1,5 +1,6 @@
 #include "Utils/MHPlayerSettingsSubsystem.h"
 
+#include "Components/CheckBox.h"
 #include "Kismet/GameplayStatics.h"
 #include "Utils/MHPlayerSettingsSaveGame.h"
 #include "Utils/LLog.h"
@@ -111,4 +112,17 @@ void UMHPlayerSettingsSubsystem::SetControllerSensitivity(float Sensitivity)
 {
 	PlayerSettings->ControllerSensitivity = Sensitivity;
 	SaveSettings();
+}
+
+void UMHPlayerSettingsSubsystem::BindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox)
+{
+	if (CheckBox)
+	{
+		CheckBox->SetIsChecked(PlayerSettings->bMouseInvertVertical);
+		CheckBox->OnCheckStateChanged.AddDynamic(this, &UMHPlayerSettingsSubsystem::SetMouseInvertVertical);
+	}
+	else
+	{
+		LL_ERR(this, "UMHPlayerSettingsSubsystem::BindCheckBoxToMouseInvertVertical CheckBox is null. Cannot bind to mouse invert vertical.");
+	}
 }
