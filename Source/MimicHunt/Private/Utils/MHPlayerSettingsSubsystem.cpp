@@ -114,6 +114,15 @@ void UMHPlayerSettingsSubsystem::SetControllerSensitivity(float Sensitivity)
 	SaveSettings();
 }
 
+FVoidCoroutine UMHPlayerSettingsSubsystem::WaitForPlayerSettingsInitialized(FLatentActionInfo LatentInfo)
+{
+	while (!PlayerSettings)
+	{
+		co_await UE5Coro::Latent::NextTick();
+	}
+	co_return;
+}
+
 void UMHPlayerSettingsSubsystem::BindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox)
 {
 	if (CheckBox)
@@ -124,5 +133,17 @@ void UMHPlayerSettingsSubsystem::BindCheckBoxToMouseInvertVertical(UCheckBox* Ch
 	else
 	{
 		LL_ERR(this, "UMHPlayerSettingsSubsystem::BindCheckBoxToMouseInvertVertical CheckBox is null. Cannot bind to mouse invert vertical.");
+	}
+}
+
+void UMHPlayerSettingsSubsystem::UnbindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox)
+{
+	if (CheckBox)
+	{
+		CheckBox->OnCheckStateChanged.RemoveDynamic(this, &UMHPlayerSettingsSubsystem::SetMouseInvertVertical);
+	}
+	else
+	{
+		LL_ERR(this, "UMHPlayerSettingsSubsystem::UnbindCheckBoxToMouseInvertVertical CheckBox is null. Cannot unbind from mouse invert vertical.");
 	}
 }

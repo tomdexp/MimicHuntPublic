@@ -57,8 +57,14 @@ void AMHPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(PlayerData->InputActionLook, ETriggerEvent::Triggered, this, &AMHPlayerController::RequestLookAction);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionMove, ETriggerEvent::Triggered, this, &AMHPlayerController::RequestMoveAction);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionJump, ETriggerEvent::Started, this, &AMHPlayerController::RequestJumpAction);
-		EnhancedInputComponent->BindAction(PlayerData->InputActionSprint, ETriggerEvent::Started, this, &AMHPlayerController::RequestSprintAction);
-		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouch, ETriggerEvent::Triggered, this, &AMHPlayerController::RequestCrouchAction);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSprint, ETriggerEvent::Started, this, &AMHPlayerController::RequestSprintActionStart);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSprint, ETriggerEvent::Completed, this, &AMHPlayerController::RequestSprintActionEnd);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSprintToggle, ETriggerEvent::Started, this, &AMHPlayerController::RequestSprintToggleAction);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouch, ETriggerEvent::Started, this, &AMHPlayerController::RequestCrouchActionStart);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouch, ETriggerEvent::Completed, this, &AMHPlayerController::RequestCrouchActionEnd);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouchToggle, ETriggerEvent::Started, this, &AMHPlayerController::RequestCrouchToggleAction);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionPrimaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestPrimaryAction);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSecondaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestSecondaryAction);
 	}
 }
 
@@ -93,7 +99,7 @@ void AMHPlayerController::RequestJumpAction(const FInputActionValue& InputAction
 	}
 }
 
-void AMHPlayerController::RequestSprintAction(const FInputActionValue& InputActionValue)
+void AMHPlayerController::RequestSprintActionStart(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn())
 	{
@@ -104,13 +110,79 @@ void AMHPlayerController::RequestSprintAction(const FInputActionValue& InputActi
 	}
 }
 
-void AMHPlayerController::RequestCrouchAction(const FInputActionValue& InputActionValue)
+void AMHPlayerController::RequestSprintActionEnd(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->SprintActionReleased();
+		}
+	}
+}
+
+void AMHPlayerController::RequestSprintToggleAction(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->SprintToggleActionPressed();
+		}
+	}
+}
+
+void AMHPlayerController::RequestCrouchActionStart(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn())
 	{
 		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
 		{
 			PlayerCharacter->CrouchActionPressed();
+		}
+	}
+}
+
+void AMHPlayerController::RequestCrouchActionEnd(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->CrouchActionReleased();
+		}
+	}
+}
+
+void AMHPlayerController::RequestCrouchToggleAction(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->CrouchToggleActionPressed();
+		}
+	}
+}
+
+void AMHPlayerController::RequestPrimaryAction(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->PrimaryActionPressed();
+		}
+	}
+}
+
+void AMHPlayerController::RequestSecondaryAction(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->SecondaryActionPressed();
 		}
 	}
 }

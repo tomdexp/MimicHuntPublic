@@ -28,8 +28,14 @@ public:
 	void RequestLookAction(const FInputActionValue& InputActionValue);
 	void RequestMoveAction(const FInputActionValue& InputActionValue);
 	void RequestJumpAction(const FInputActionValue& InputActionValue);
-	void RequestSprintAction(const FInputActionValue& InputActionValue);
-	void RequestCrouchAction(const FInputActionValue& InputActionValue);
+	void RequestSprintActionStart(const FInputActionValue& InputActionValue);
+	void RequestSprintActionEnd(const FInputActionValue& InputActionValue);
+	void RequestSprintToggleAction(const FInputActionValue& InputActionValue);
+	void RequestCrouchActionStart(const FInputActionValue& InputActionValue);
+	void RequestCrouchActionEnd(const FInputActionValue& InputActionValue);
+	void RequestCrouchToggleAction(const FInputActionValue& InputActionValue);
+	void RequestPrimaryAction(const FInputActionValue& InputActionValue);
+	void RequestSecondaryAction(const FInputActionValue& InputActionValue);
 
 private:
 	UFUNCTION()

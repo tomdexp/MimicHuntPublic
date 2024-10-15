@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "MHPlayerData.generated.h"
 
 class UInputAction;
@@ -30,9 +31,21 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
 	TObjectPtr<UInputAction> InputActionCrouch;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
+	TObjectPtr<UInputAction> InputActionCrouchToggle;
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
 	TObjectPtr<UInputAction> InputActionSprint;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
+	TObjectPtr<UInputAction> InputActionSprintToggle;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
+	TObjectPtr<UInputAction> InputActionPrimaryAction;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "INPUT")
+	TObjectPtr<UInputAction> InputActionSecondaryAction;
 
 	/** MOVEMENT */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MOVEMENT")
@@ -43,4 +56,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MOVEMENT")
 	float CrouchSpeed = 100.0f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "MOVEMENT")
+	float JumpVelocity = 300.0f;
 };

@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "MHPlayerSettingsSaveGame.h"
 #include "Subsystems/GameInstanceSubsystem.h"
+#include "UE5Coro/UnrealTypes.h"
 #include "MHPlayerSettingsSubsystem.generated.h"
 
 class UCheckBox;
@@ -61,11 +62,17 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void SetControllerSensitivity(float Sensitivity);
 
+	// This will be used to wait for the player settings to be initialized before accessing them
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForPlayerSettingsInitialized(FLatentActionInfo LatentInfo);
+
 	/************************************************************************/
 	/* 							UI BINDINGS							        */
 	/************************************************************************/
 	UFUNCTION(BlueprintCallable, Category = "Player Settings")
 	void BindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox);
+	UFUNCTION(BlueprintCallable, Category = "Player Settings")
+	void UnbindCheckBoxToMouseInvertVertical(UCheckBox* CheckBox);
 	
 	
 private:
