@@ -26,7 +26,10 @@ public class MimicHunt : ModuleRules
 			"GameplayAbilities",
 			"GameplayTags",
 			"GameplayTasks",
-			"UMG"
+			"UMG",
+			"UnrealEd",
+			"EditorSubsystem",
+			"SubobjectDataInterface"
 		});
 	}
 }

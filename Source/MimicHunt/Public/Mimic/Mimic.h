@@ -4,25 +4,25 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "AMimic.generated.h"
-
-DECLARE_LOG_CATEGORY_EXTERN(LogMimic, Log, All);
+#include "Mimic.generated.h"
 
 UCLASS()
 
-class MIMICHUNT_API AAMimic : public AActor
+class MIMICHUNT_API AMimic : public AActor
 {
 	GENERATED_BODY()
 
 public:
 	// Sets default values for this actor's properties
-	AAMimic();
-	virtual void OnConstruction(const FTransform& Transform) override;
-
+	AMimic();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
+#if WITH_EDITOR
+	void ComputeFBXIntoFinalForm();
+#endif
+	
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
