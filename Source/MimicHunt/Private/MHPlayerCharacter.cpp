@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Data/MHPlayerData.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
@@ -170,7 +171,15 @@ void AMHPlayerCharacter::SecondaryActionReleased()
 
 void AMHPlayerCharacter::InteractPressed()
 {
-	LL_DBG(this, "AMHPlayerCharacter::InteractPressed {0}",GetPlayerState()->GetPlayerName());
+	LL_DBG(this, "AMHPlayerCharacter::InteractPressed {0}",GetPlayerState()->GetPlayerId());
+	// Get all players in the GameState
+	for (APlayerState* ps : GetWorld()->GetGameState()->PlayerArray)
+	{
+		if (ps->GetPlayerId() != GetPlayerState()->GetPlayerId())
+		{
+			LL_DBG(this, "AMHPlayerCharacter::InteractPressed : Player {0} is not the same as {1}", ps->GetPlayerId(), GetPlayerState()->GetPlayerId());
+		}
+	}
 }
 
 void AMHPlayerCharacter::InteractReleased()
