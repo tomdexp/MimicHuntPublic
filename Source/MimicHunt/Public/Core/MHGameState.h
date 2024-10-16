@@ -22,6 +22,9 @@ class MIMICHUNT_API AMHGameState : public AGameStateBase
 	GENERATED_BODY()
 public:
 	AMHGameState();
+
+	virtual void BeginPlay() override;
+	
 	UFUNCTION(BlueprintCallable , Category = "Online")
 	void SetOnlineState(EOnlineState NewOnlineState);
 	
@@ -55,4 +58,7 @@ public:
 
 	UPROPERTY()
 	int32 TestCounter;
+
+	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Online")
+	int32 VoiceRoomId = -1;
 };

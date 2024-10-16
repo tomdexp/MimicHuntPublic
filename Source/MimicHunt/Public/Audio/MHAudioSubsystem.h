@@ -22,14 +22,14 @@ public:
 	void ExampleFunction();
 
 	UFUNCTION(BlueprintCallable, Category = "Audio")
-	void SetVoiceChatUserID(const int32 UserID);
-
-	UFUNCTION(BlueprintCallable, Category = "Audio")
-	void SetVoiceChatRoomID(const FString RoomID);
-
-	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void StartRecordingWithRecognition(const FString& speechLanguage);
 
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void GetGMEMessage(int& localUTCTime, int& messageType, int& code, FString& message1, FString& message2);
+
+	UPROPERTY()
+	int32 VoiceRoomId = -1;
+
+	UFUNCTION(BlueprintCallable, Category = "Audio")
+	void CleanRoomId();
 };

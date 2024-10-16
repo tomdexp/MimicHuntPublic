@@ -18,18 +18,6 @@ void UMHAudioSubsystem::ExampleFunction()
 	LL_DBG(this, "Example function called");
 }
 
-void UMHAudioSubsystem::SetVoiceChatUserID(const int32 UserID)
-{
-	LL_DBG(this, "SetVoiceChatUserID called with UserID: %s", UserID);
-	FTencentGMEDevice::SetUserID(FString::FromInt(UserID));
-}
-
-void UMHAudioSubsystem::SetVoiceChatRoomID(const FString RoomID)
-{
-	LL_DBG(this, "SetVoiceChatRoomID called with RoomID: %s", RoomID);
-	FTencentGMEDevice::SetRoomID(RoomID);
-}
-
 void UMHAudioSubsystem::StartRecordingWithRecognition(const FString& speechLanguage)
 {
 	LL_DBG(this, "Speech language = French");
@@ -40,4 +28,15 @@ void UMHAudioSubsystem::GetGMEMessage(int& localUTCTime, int& messageType, int& 
 {
 	FTencentGMEDevice::GetGMEMessage(localUTCTime, messageType, code, message1, message2);
 	LL_DBG(this, "Message 1 : %s", message1);
+}
+
+void UMHAudioSubsystem::CleanRoomId()
+{
+	if (VoiceRoomId == -1)
+	{
+		LL_DBG(this, "Room id already cleaned");
+		return;
+	}
+	VoiceRoomId = -1;
+	LL_DBG(this, "Room id cleaned");
 }

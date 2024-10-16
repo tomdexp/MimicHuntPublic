@@ -1,16 +1,38 @@
 #include "Core/MHGameState.h"
 
 #include "OnlineSubsystem.h"
+#include "Audio/MHAudioSubsystem.h"
 #include "Core/MHPlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
-LL_FILE_CVAR(GameState);
+class UMHAudioSubsystem;
+LL_FILE_CVAR(MHBaseGameState);
 
 AMHGameState::AMHGameState()
 {
 	CurrentOnlineState = Undefined;
 	TestCounter = 0;
+	VoiceRoomId = -1;
+}
+
+void AMHGameState::BeginPlay()
+{
+	Super::BeginPlay();
+	// Get the MHAudioSubsystem
+	if (UWorld* World = GetWorld())
+	{
+		if (UMHAudioSubsystem* AudioSubsystem = World->GetGameInstance()->GetSubsystem<UMHAudioSubsystem>())
+		{
+			if (AudioSubsystem->VoiceRoomId == -1) // There was no room id set (first time)
+			{
+				// Create a random 9 digits int
+				VoiceRoomId = FMath::RandRange(100000000, 999999999);
+				AudioSubsystem->VoiceRoomId = VoiceRoomId;
+				LL_DBG(this,"AMHGameState::BeginPlay : VoiceRoomId was -1, set to {0}", VoiceRoomId);
+			}
+		}
+	}
 }
 
 void AMHGameState::SetOnlineState(EOnlineState NewOnlineState)
@@ -37,6 +59,7 @@ void AMHGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHGameState, CurrentOnlineState);
+	DOREPLIFETIME(AMHGameState, VoiceRoomId);
 }
 
 void AMHGameState::AddPlayerState(APlayerState* PlayerState)
