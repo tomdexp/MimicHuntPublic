@@ -17,7 +17,7 @@ ENUM_CLASS_FLAGS(ESpawnableOrgans)
 
 //This class represent the joint between two parts of a furniture piece, where you can add mimic eyes, legs etc.
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
-class MIMICHUNT_API UFurnitureJoint : public USceneComponent
+class MIMICHUNT_API UFurnitureJoint : public UChildActorComponent
 {
 	GENERATED_BODY()
 
@@ -44,4 +44,9 @@ public:
 	FString ChildChunkName;
 	UPROPERTY(EditAnywhere)
 	FTransform SecondAttachPointTransform;
+
+	UPROPERTY(BlueprintReadOnly)
+	UStaticMeshComponent* ParentChunkComponent;
+	UPROPERTY(BlueprintReadOnly)
+	UStaticMeshComponent* ChildChunkComponent;
 };
