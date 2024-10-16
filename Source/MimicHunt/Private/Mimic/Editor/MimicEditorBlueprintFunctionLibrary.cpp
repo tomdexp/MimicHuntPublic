@@ -69,6 +69,29 @@ bool IsStartBeacon(const FString& Input)
 }
 #pragma endregion
 
+//SceneComponent->GetComponentTransform doesn't work in editor scripting (always return identity), so we're "recoding" it
+//I'm not sure this function works if there are multiple scale change and rotations etc. But it works perfectly for object where the root is scaled and there's only translations
+FTransform GetWorldTransform(FSubobjectDataHandle Handle, USubobjectDataSubsystem* SubobjectDataSubsystem)
+{
+	FTransform transform = FTransform::Identity;
+	auto data = Handle.GetData();
+
+	// We start with an identity transform and accumulate the relative transforms to get the world transform
+	do
+	{
+		if (!data->IsSceneComponent()) break;
+		auto parentData = data->GetParentHandle().GetData();
+		auto dataSceneComponent = Cast<USceneComponent>(data->GetObject());
+		transform = transform.GetRelativeTransform(dataSceneComponent->GetRelativeTransform());
+		data = parentData;
+	} while (data->HasParent());
+
+	transform=(transform).Inverse();
+	transform.SetTranslation(transform.GetTranslation()*transform.GetScale3D());
+	
+	return transform;
+}
+
 void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blueprint)
 {
 	if (!Blueprint)
@@ -163,16 +186,26 @@ void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blu
 		auto complementaryBeaconHandle = componentsByName[complementaryBeaconName];
 		auto complementaryBeaconParentHandle = complementaryBeaconHandle.GetData()->GetParentHandle();
 
+		//The second beacon has a transform, we convert it to a transform relative to the first beacon
+		auto complementaryBeaconStaticMeshComponent=Cast<UStaticMeshComponent>(complementaryBeaconHandle.GetData()->GetObject());
+		auto parentStaticMeshComponent=Cast<UStaticMeshComponent>(parentHandle.GetData()->GetObject());
+		FTransform complementaryBeaconWorldTransform=GetWorldTransform(complementaryBeaconHandle,subobjectSubsystem);
+		FTransform parentWorldTransform=GetWorldTransform(parentHandle,subobjectSubsystem);
+		FTransform complementaryBeaconRelativeTransform=complementaryBeaconWorldTransform.GetRelativeTransform(parentWorldTransform);
+
+		//We create the new furniture joint
 		auto staticMeshComponent = Cast<UStaticMeshComponent>(subobjectData->GetObject());
 		UFurnitureJoint* furnitureJoint = NewObject<UFurnitureJoint>();
 		furnitureJoint->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-		furnitureJoint->ParentChunk=const_cast<UStaticMeshComponent*>(Cast<UStaticMeshComponent>(parentHandle.GetData()->GetObject()));
-		furnitureJoint->ChildChunk=const_cast<UStaticMeshComponent*>(Cast<UStaticMeshComponent>(complementaryBeaconParentHandle.GetData()->GetObject()));
+		furnitureJoint->ParentChunkName=parentHandle.GetData()->GetAssetName().ToString();
+		furnitureJoint->ChildChunkName=complementaryBeaconParentHandle.GetData()->GetAssetName().ToString();
 		furnitureJoint->SetMobility(EComponentMobility::Movable);
 		furnitureJoint->SetRelativeTransform(staticMeshComponent->GetRelativeTransform());
+		furnitureJoint->SecondAttachPointTransform=complementaryBeaconRelativeTransform;
 		FString furnitureJointName="Joint_"+linkedChunkName;
 		furnitureJoint->Rename(*furnitureJointName);
 
+		//And add it using the subsystem
 		FAddNewSubobjectParams params;
 		params.ParentHandle = parentHandle;
 		params.NewClass = UFurnitureJoint::StaticClass();

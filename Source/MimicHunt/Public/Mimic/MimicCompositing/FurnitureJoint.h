@@ -33,12 +33,15 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
+
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	ESpawnableOrgans SpawnableOrgans;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* ParentChunk;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UStaticMeshComponent* ChildChunk;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//What furniture chunk is the parent of this joint, name should be automaticly set by the Script Asset Action and not modified by the GD
+	UPROPERTY(EditAnywhere)
+	FString ParentChunkName;
+	//What furniture chunk is the parent of this joint, name should be automaticly set by the Script Asset Action and not modified by the GD
+	UPROPERTY(EditAnywhere)
+	FString ChildChunkName;
+	UPROPERTY(EditAnywhere)
 	FTransform SecondAttachPointTransform;
 };

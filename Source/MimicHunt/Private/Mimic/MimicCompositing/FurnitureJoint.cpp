@@ -32,4 +32,3 @@ void UFurnitureJoint::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 	// ...
 }
-
