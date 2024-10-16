@@ -1,12 +1,12 @@
 #include "Core/MHPlayerController.h"
 
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystemInterface.h"
 #include "EnhancedInputSubsystems.h"
 #include "MHPlayerCharacter.h"
 #include "Data/MHPlayerData.h"
-
+#include "UserSettings/EnhancedInputUserSettings.h"
 #include "Utils/LLog.h"
-#include "Utils/MHPlayerSettingsSubsystem.h"
 
 LL_FILE_CVAR(MHPlayerController);
 
@@ -23,23 +23,13 @@ void AMHPlayerController::BeginPlay()
 	
 	if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(GetLocalPlayer()))
 	{
-		Subsystem->AddMappingContext(PlayerData->InputMappingContext, 0);
-	}
-	if (UMHPlayerSettingsSubsystem* PlayerSettingsSubsystem = GetGameInstance()->GetSubsystem<UMHPlayerSettingsSubsystem>())
-	{
-		PlayerSettingsSubsystem->OnPlayerSettingsChanged.AddDynamic(this, &AMHPlayerController::PlayerSettingsChanged);
+		FModifyContextOptions ModifyContextOptions;
+		ModifyContextOptions.bNotifyUserSettings = true;
+		Subsystem->AddMappingContext(PlayerData->InputMappingContext, 0, ModifyContextOptions);
+		Subsystem->GetUserSettings()->RegisterInputMappingContext(PlayerData->InputMappingContext);
 	}
 }
 
-void AMHPlayerController::EndPlay(const EEndPlayReason::Type EndPlayReason)
-{
-	Super::EndPlay(EndPlayReason);
-	
-	if (UMHPlayerSettingsSubsystem* PlayerSettingsSubsystem = GetGameInstance()->GetSubsystem<UMHPlayerSettingsSubsystem>())
-	{
-		PlayerSettingsSubsystem->OnPlayerSettingsChanged.RemoveDynamic(this, &AMHPlayerController::PlayerSettingsChanged);
-	}
-}
 
 void AMHPlayerController::SetupInputComponent()
 {
@@ -53,7 +43,6 @@ void AMHPlayerController::SetupInputComponent()
 	
 	if (UEnhancedInputComponent* EnhancedInputComponent = CastChecked<UEnhancedInputComponent>(InputComponent))
 	{
-		
 		EnhancedInputComponent->BindAction(PlayerData->InputActionLook, ETriggerEvent::Triggered, this, &AMHPlayerController::RequestLookAction);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionMove, ETriggerEvent::Triggered, this, &AMHPlayerController::RequestMoveAction);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionJump, ETriggerEvent::Started, this, &AMHPlayerController::RequestJumpAction);
@@ -185,11 +174,6 @@ void AMHPlayerController::RequestSecondaryAction(const FInputActionValue& InputA
 			PlayerCharacter->SecondaryActionPressed();
 		}
 	}
-}
-
-void AMHPlayerController::PlayerSettingsChanged()
-{
-
 }
 
 

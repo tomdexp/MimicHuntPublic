@@ -19,7 +19,7 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
-	virtual void Tick(float DeltaTime) override;
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DATA")
 	TObjectPtr<UMHPlayerData> PlayerData;
@@ -31,6 +31,8 @@ public:
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMeshComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	void UpdateMovementSpeed();
 	
 	void SprintActionPressed();
 	void SprintActionReleased();
@@ -41,4 +43,13 @@ public:
 	virtual void Jump() override;
 	void PrimaryActionPressed();
 	void SecondaryActionPressed();
+
+	UFUNCTION(Server, Reliable)
+	void ServerSetSprinting(bool bNewSprinting);
+	
+	UPROPERTY(ReplicatedUsing = OnRep_IsSprinting)
+	bool bIsSprinting = false;
+
+	UFUNCTION()
+	void OnRep_IsSprinting();
 };

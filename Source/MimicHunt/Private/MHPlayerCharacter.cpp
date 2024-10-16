@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Data/MHPlayerData.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
 LL_FILE_CVAR(MHPlayerCharacter);
@@ -58,9 +59,11 @@ void AMHPlayerCharacter::BeginPlay()
 	}
 }
 
-void AMHPlayerCharacter::Tick(float DeltaTime)
+
+void AMHPlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
-	Super::Tick(DeltaTime);
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMHPlayerCharacter, bIsSprinting);
 }
 
 void AMHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -68,19 +71,49 @@ void AMHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputC
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+void AMHPlayerCharacter::UpdateMovementSpeed()
+{
+	LL_DBG(this, "AMHPlayerCharacter::UpdateMovementSpeed");
+	GetCharacterMovement()->MaxWalkSpeed = bIsSprinting ? PlayerData->SprintSpeed : PlayerData->WalkSpeed;
+}
+
 void AMHPlayerCharacter::SprintActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::SprintActionPressed");
+	if (!bIsSprinting)
+	{
+		bIsSprinting = true;
+		OnRep_IsSprinting();
+		ServerSetSprinting(true);
+	}
 }
 
 void AMHPlayerCharacter::SprintActionReleased()
 {
 	LL_DBG(this, "AMHPlayerCharacter::SprintActionReleased");
+	if (bIsSprinting)
+	{
+		bIsSprinting = false;
+		OnRep_IsSprinting();
+		ServerSetSprinting(false);
+	}
 }
 
 void AMHPlayerCharacter::SprintToggleActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::SprintToggleActionPressed");
+	if (bIsSprinting)
+	{
+		bIsSprinting = false;
+		OnRep_IsSprinting();
+		ServerSetSprinting(false);
+	}
+	else
+	{
+		bIsSprinting = true;
+		OnRep_IsSprinting();
+		ServerSetSprinting(true);
+	}
 }
 
 void AMHPlayerCharacter::CrouchActionPressed()
@@ -122,4 +155,17 @@ void AMHPlayerCharacter::PrimaryActionPressed()
 void AMHPlayerCharacter::SecondaryActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::SecondaryActionPressed");
+}
+
+void AMHPlayerCharacter::ServerSetSprinting_Implementation(bool bNewSprinting)
+{
+	LL_DBG(this, "AMHPlayerCharacter::ServerSetSprinting_Implementation");
+	bIsSprinting = bNewSprinting;
+	OnRep_IsSprinting();
+}
+
+void AMHPlayerCharacter::OnRep_IsSprinting()
+{
+	LL_DBG(this, "AMHPlayerCharacter::OnRep_IsSprinting");
+	UpdateMovementSpeed();
 }

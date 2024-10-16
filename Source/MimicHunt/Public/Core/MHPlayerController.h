@@ -18,8 +18,6 @@ class MIMICHUNT_API AMHPlayerController : public APlayerController
 	GENERATED_BODY()
 public:
 	virtual void BeginPlay() override;
-	virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
-	
 	virtual void SetupInputComponent() override;
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "DATA")
@@ -36,8 +34,4 @@ public:
 	void RequestCrouchToggleAction(const FInputActionValue& InputActionValue);
 	void RequestPrimaryAction(const FInputActionValue& InputActionValue);
 	void RequestSecondaryAction(const FInputActionValue& InputActionValue);
-
-private:
-	UFUNCTION()
-	void PlayerSettingsChanged();
 };
