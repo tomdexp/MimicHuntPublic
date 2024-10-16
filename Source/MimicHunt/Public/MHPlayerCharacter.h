@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/MHLivingBeing.h"
+#include "UE5Coro/UnrealTypes.h"
 #include "MHPlayerCharacter.generated.h"
 
 class UMHPlayerData;
@@ -56,4 +57,7 @@ public:
 
 	UFUNCTION()
 	void OnRep_IsSprinting();
+
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForPlayerState(FLatentActionInfo LatentInfo);
 };

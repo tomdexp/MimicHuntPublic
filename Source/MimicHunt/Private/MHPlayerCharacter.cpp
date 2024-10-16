@@ -199,3 +199,12 @@ void AMHPlayerCharacter::OnRep_IsSprinting()
 	LL_DBG(this, "AMHPlayerCharacter::OnRep_IsSprinting");
 	UpdateMovementSpeed();
 }
+
+FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentInfo)
+{
+	while (!GetPlayerState())
+	{
+		co_await UE5Coro::Latent::NextTick();
+	}
+	co_return;
+}
