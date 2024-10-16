@@ -14,7 +14,6 @@ public:
 	UPROPERTY(ReplicatedUsing=OnRep_IsReadyInLobby, BlueprintReadOnly, Category = "Online")
 	bool bIsReadyInLobby;
 
-	// TODO : INVESTIGATE NETMULTICAST VS SERVER VS CLIENT RPC
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
 	void Server_SetIsReadyInLobby(bool bNewIsReadyInLobby);
 	

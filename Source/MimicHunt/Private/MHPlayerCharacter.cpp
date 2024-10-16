@@ -4,6 +4,7 @@
 #include "Components/CapsuleComponent.h"
 #include "Data/MHPlayerData.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/PlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
@@ -152,9 +153,29 @@ void AMHPlayerCharacter::PrimaryActionPressed()
 	LL_DBG(this, "AMHPlayerCharacter::PrimaryActionPressed");
 }
 
+void AMHPlayerCharacter::PrimaryActionReleased()
+{
+	LL_DBG(this, "AMHPlayerCharacter::PrimaryActionReleased");
+}
+
 void AMHPlayerCharacter::SecondaryActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::SecondaryActionPressed");
+}
+
+void AMHPlayerCharacter::SecondaryActionReleased()
+{
+	LL_DBG(this, "AMHPlayerCharacter::SecondaryActionReleased");
+}
+
+void AMHPlayerCharacter::InteractPressed()
+{
+	LL_DBG(this, "AMHPlayerCharacter::InteractPressed {0}",GetPlayerState()->GetPlayerName());
+}
+
+void AMHPlayerCharacter::InteractReleased()
+{
+	LL_DBG(this, "AMHPlayerCharacter::InteractReleased");
 }
 
 void AMHPlayerCharacter::ServerSetSprinting_Implementation(bool bNewSprinting)

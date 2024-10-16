@@ -42,7 +42,11 @@ public:
 	void CrouchToggleActionPressed();
 	virtual void Jump() override;
 	void PrimaryActionPressed();
+	void PrimaryActionReleased();
 	void SecondaryActionPressed();
+	void SecondaryActionReleased();
+	void InteractPressed();
+	void InteractReleased();
 
 	UFUNCTION(Server, Reliable)
 	void ServerSetSprinting(bool bNewSprinting);

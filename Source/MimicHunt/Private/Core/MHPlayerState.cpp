@@ -24,7 +24,6 @@ bool AMHPlayerState::Server_SetIsReadyInLobby_Validate(bool bNewIsReadyInLobby)
 void AMHPlayerState::OnRep_IsReadyInLobby()
 {
 	LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Player {0} ready in lobby = {1}", GetPlayerName(), bIsReadyInLobby);
-	//LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Broadcast OnPlayerReadyInLobbyChanged with : {0}", bIsReadyInLobby);
 	OnPlayerReadyInLobbyChanged.Broadcast(bIsReadyInLobby);
 }
 

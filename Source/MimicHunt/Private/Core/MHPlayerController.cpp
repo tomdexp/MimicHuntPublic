@@ -52,8 +52,11 @@ void AMHPlayerController::SetupInputComponent()
 		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouch, ETriggerEvent::Started, this, &AMHPlayerController::RequestCrouchActionStart);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouch, ETriggerEvent::Completed, this, &AMHPlayerController::RequestCrouchActionEnd);
 		EnhancedInputComponent->BindAction(PlayerData->InputActionCrouchToggle, ETriggerEvent::Started, this, &AMHPlayerController::RequestCrouchToggleAction);
-		EnhancedInputComponent->BindAction(PlayerData->InputActionPrimaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestPrimaryAction);
-		EnhancedInputComponent->BindAction(PlayerData->InputActionSecondaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestSecondaryAction);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionPrimaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestPrimaryActionStart);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionPrimaryAction, ETriggerEvent::Completed, this, &AMHPlayerController::RequestPrimaryActionEnd);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSecondaryAction, ETriggerEvent::Started, this, &AMHPlayerController::RequestSecondaryActionStart);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionSecondaryAction, ETriggerEvent::Completed, this, &AMHPlayerController::RequestSecondaryActionEnd);
+		EnhancedInputComponent->BindAction(PlayerData->InputActionInteract, ETriggerEvent::Started, this, &AMHPlayerController::RequestInteractAction);
 	}
 }
 
@@ -154,7 +157,7 @@ void AMHPlayerController::RequestCrouchToggleAction(const FInputActionValue& Inp
 	}
 }
 
-void AMHPlayerController::RequestPrimaryAction(const FInputActionValue& InputActionValue)
+void AMHPlayerController::RequestPrimaryActionStart(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn())
 	{
@@ -165,7 +168,18 @@ void AMHPlayerController::RequestPrimaryAction(const FInputActionValue& InputAct
 	}
 }
 
-void AMHPlayerController::RequestSecondaryAction(const FInputActionValue& InputActionValue)
+void AMHPlayerController::RequestPrimaryActionEnd(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->PrimaryActionReleased();
+		}
+	}
+}
+
+void AMHPlayerController::RequestSecondaryActionStart(const FInputActionValue& InputActionValue)
 {
 	if (APawn* ControlledPawn = GetPawn())
 	{
@@ -176,4 +190,24 @@ void AMHPlayerController::RequestSecondaryAction(const FInputActionValue& InputA
 	}
 }
 
+void AMHPlayerController::RequestSecondaryActionEnd(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->SecondaryActionReleased();
+		}
+	}
+}
 
+void AMHPlayerController::RequestInteractAction(const FInputActionValue& InputActionValue)
+{
+	if (APawn* ControlledPawn = GetPawn())
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(ControlledPawn))
+		{
+			PlayerCharacter->InteractPressed();
+		}
+	}
+}

@@ -22,7 +22,7 @@ public:
 
 	UPROPERTY( EditAnywhere, BlueprintReadOnly, Category = "DATA")
 	TObjectPtr<UMHPlayerData> PlayerData;
-	
+
 	void RequestLookAction(const FInputActionValue& InputActionValue);
 	void RequestMoveAction(const FInputActionValue& InputActionValue);
 	void RequestJumpAction(const FInputActionValue& InputActionValue);
@@ -32,6 +32,9 @@ public:
 	void RequestCrouchActionStart(const FInputActionValue& InputActionValue);
 	void RequestCrouchActionEnd(const FInputActionValue& InputActionValue);
 	void RequestCrouchToggleAction(const FInputActionValue& InputActionValue);
-	void RequestPrimaryAction(const FInputActionValue& InputActionValue);
-	void RequestSecondaryAction(const FInputActionValue& InputActionValue);
+	void RequestPrimaryActionStart(const FInputActionValue& InputActionValue);
+	void RequestPrimaryActionEnd(const FInputActionValue& InputActionValue);
+	void RequestSecondaryActionStart(const FInputActionValue& InputActionValue);
+	void RequestSecondaryActionEnd(const FInputActionValue& InputActionValue);
+	void RequestInteractAction(const FInputActionValue& InputActionValue);
 };
