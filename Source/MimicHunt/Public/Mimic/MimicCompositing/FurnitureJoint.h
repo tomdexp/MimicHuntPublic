@@ -33,10 +33,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere,BlueprintReadWrite)
 	ESpawnableOrgans SpawnableOrgans;
-	UPROPERTY(EditAnywhere)
-	USceneComponent* ConnectionPoint1;
-	UPROPERTY(EditAnywhere)
-	USceneComponent* ConnectionPoint2;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* ParentChunk;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UStaticMeshComponent* ChildChunk;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FTransform SecondAttachPointTransform;
 };

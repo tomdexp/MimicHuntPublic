@@ -18,10 +18,7 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-#if WITH_EDITOR
-	void ComputeFBXIntoFinalForm();
-#endif
+	virtual void OnConstruction(const FTransform& Transform) override;
 	
 public:
 	// Called every frame
