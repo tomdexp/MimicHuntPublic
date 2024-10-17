@@ -23,14 +23,19 @@ AMimic::AMimic()
 void AMimic::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void AMimic::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
 
-	 TSet<UActorComponent*> components=GetComponents();
+		FurnitureJoints=TArray<UFurnitureJoint*>();
+	TSet<UActorComponent*> components=GetComponents();
+	for(auto component : components)
+	{
+		if(component->GetClass()!=UFurnitureJoint::StaticClass()) continue;
+		FurnitureJoints.Add(Cast<UFurnitureJoint>(component));
+	}
 
 	//We iterate a first time to create an map of all the furniture chunks by name and find the root to make it invisible
 	TMap<FString, UStaticMeshComponent*> staticMeshMapByName=TMap<FString,UStaticMeshComponent*>();
@@ -50,29 +55,53 @@ void AMimic::OnConstruction(const FTransform& Transform)
 		staticMeshMapByName.Add(componentName, staticMeshComponent);
 	}
 
-	 //We iterate on components to assign the Furniture Chunks to the correct joints
-	 for (UActorComponent* component : components)
-	 {
-	 	FString componentName=component->GetName();
+	//We iterate on components to assign the Furniture Chunks to the correct joints
+	for (UActorComponent* component : components)
+	{
+		FString componentName=component->GetName();
 	 	
-	 	if(component->GetClass()!=UFurnitureJoint::StaticClass()) continue;
-	 	auto jointComponent=Cast<UFurnitureJoint>(component);
+		if(component->GetClass()!=UFurnitureJoint::StaticClass()) continue;
+		auto jointComponent=Cast<UFurnitureJoint>(component);
 
-	 	if(!staticMeshMapByName.Contains(jointComponent->ParentChunkName))
-	 	{
-	 		UE_LOG(LogTemp, Error, TEXT("Parent chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
-				 , *component->GetName(), *jointComponent->ParentChunkName);
-	 		continue;
-	 	}
-	 	jointComponent->ParentChunkComponent=staticMeshMapByName[jointComponent->ParentChunkName];
+		if(!staticMeshMapByName.Contains(jointComponent->ParentChunkName))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Parent chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
+				, *component->GetName(), *jointComponent->ParentChunkName);
+			continue;
+		}
+		jointComponent->ParentChunkComponent=staticMeshMapByName[jointComponent->ParentChunkName];
 	 	
-	 	if(!staticMeshMapByName.Contains(jointComponent->ChildChunkName))
-	 	{
-	 		UE_LOG(LogTemp, Error, TEXT("Child chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
-	 			, *component->GetName(), *jointComponent->ChildChunkName);
-	 		continue;
-	 	}
-	 	jointComponent->ChildChunkComponent=staticMeshMapByName[jointComponent->ChildChunkName];
+		if(!staticMeshMapByName.Contains(jointComponent->ChildChunkName))
+		{
+			UE_LOG(LogTemp, Error, TEXT("Child chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
+				, *component->GetName(), *jointComponent->ChildChunkName);
+			continue;
+		}
+		jointComponent->ChildChunkComponent=staticMeshMapByName[jointComponent->ChildChunkName];
+	}
+}
+
+void AMimic::MimicBirth()
+{
+	for(auto joint : FurnitureJoints)
+	{
+		joint->OnMimicBirth(this);
+	}
+}
+
+void AMimic::MimicWake()
+{
+	for(auto joint : FurnitureJoints)
+	{
+		joint->OnMimicWake(this);
+	}
+}
+
+void AMimic::MimicSleep()
+{
+	for(auto joint : FurnitureJoints)
+	{
+		joint->OnMimicSleep(this);
 	}
 }
 
