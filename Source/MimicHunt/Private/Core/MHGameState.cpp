@@ -19,17 +19,20 @@ AMHGameState::AMHGameState()
 void AMHGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	// Get the MHAudioSubsystem
-	if (UWorld* World = GetWorld())
+
+	if (HasAuthority()) // Only the server should generate the room id
 	{
-		if (UMHAudioSubsystem* AudioSubsystem = World->GetGameInstance()->GetSubsystem<UMHAudioSubsystem>())
+		if (UWorld* World = GetWorld()) // Get the MHAudioSubsystem via the World
 		{
-			if (AudioSubsystem->VoiceRoomId == -1) // There was no room id set (first time)
+			if (UMHAudioSubsystem* AudioSubsystem = World->GetGameInstance()->GetSubsystem<UMHAudioSubsystem>())
 			{
-				// Create a random 9 digits int
-				VoiceRoomId = FMath::RandRange(100000000, 999999999);
-				AudioSubsystem->VoiceRoomId = VoiceRoomId;
-				LL_DBG(this,"AMHGameState::BeginPlay : VoiceRoomId was -1, set to {0}", VoiceRoomId);
+				if (AudioSubsystem->VoiceRoomId == -1) // There was no room id set (first time)
+				{
+					// Create a random 9 digits int
+					VoiceRoomId = FMath::RandRange(100000000, 999999999);
+					AudioSubsystem->VoiceRoomId = VoiceRoomId;
+					LL_DBG(this,"AMHGameState::BeginPlay : VoiceRoomId was -1, set to {0}", VoiceRoomId);
+				}
 			}
 		}
 	}
