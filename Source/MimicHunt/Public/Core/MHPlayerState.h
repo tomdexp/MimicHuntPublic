@@ -5,6 +5,7 @@
 #include "GameFramework/PlayerState.h"
 #include "MHPlayerState.generated.h"
 
+class UMHAttributeSetPlayer;
 class UMHAbilitySystemComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerReadyInLobbyChanged, bool, bNewIsReadyInLobby);
@@ -22,10 +23,12 @@ public:
 	UPROPERTY()
 	TObjectPtr<UMHAbilitySystemComponent> AbilitySystemComponent;
 
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override
-	{
-		return static_cast<UAbilitySystemComponent*>(AbilitySystemComponent);
-	}
+	UPROPERTY()
+	TObjectPtr<UMHAttributeSetPlayer> AttributeSetPlayer;
+
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	
+	UMHAttributeSetPlayer* GetAttributeSetPlayer() const;
 
 	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
 	void Server_SetIsReadyInLobby(bool bNewIsReadyInLobby);

@@ -11,12 +11,11 @@ class MIMICHUNT_API AMHMimicCharacter : public AMHLivingBeing
 
 public:
 	AMHMimicCharacter();
-
-protected:
 	virtual void BeginPlay() override;
 
-public:
-	virtual void Tick(float DeltaTime) override;
-
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	/************************************************************************/
+	/* 						GAMEPLAY ABILITY SYSTEM			                */
+	/************************************************************************/
+	UPROPERTY()
+	TObjectPtr<class UMHAttributeSetMimic> AttributeSetMimic;
 };

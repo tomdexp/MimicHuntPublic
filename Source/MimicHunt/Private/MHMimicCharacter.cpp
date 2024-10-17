@@ -1,24 +1,28 @@
 #include "MHMimicCharacter.h"
 
+#include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
+#include "GameplayAbilitySystem/AttributeSets/MHAttributeSetMimic.h"
+
 
 AMHMimicCharacter::AMHMimicCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	AbilitySystemComponent = CreateDefaultSubobject<UMHAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Minimal);
+
+	AttributeSetMimic = CreateDefaultSubobject<UMHAttributeSetMimic>(TEXT("AttributeSetMimic"));
+	AttributeSetLivingBeing = AttributeSetMimic;
 }
 
 void AMHMimicCharacter::BeginPlay()
 {
 	Super::BeginPlay();
-	
-}
 
-void AMHMimicCharacter::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
+	if (AbilitySystemComponent)
+	{
+		InitializeAttributes();
+		AddStartupEffects();
+		AddCharacterAbilities();
+	}
 }
-
-void AMHMimicCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
-{
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
-}
-

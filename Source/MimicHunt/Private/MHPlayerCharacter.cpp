@@ -9,6 +9,8 @@
 #include "GameFramework/GameStateBase.h"
 #include "GameFramework/PlayerState.h"
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
+#include "GameplayAbilitySystem/AttributeSets/MHAttributeSetLivingBeing.h"
+#include "GameplayAbilitySystem/AttributeSets/MHAttributeSetPlayer.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
@@ -86,8 +88,31 @@ void AMHPlayerCharacter::PossessedBy(AController* NewController)
 		// Set the ASC on the Server. Clients do this in OnRep_PlayerState()
 		AbilitySystemComponent = Cast<UMHAbilitySystemComponent>(PS->GetAbilitySystemComponent());
 
+		// Since AttributeSetPlayer is a subclass of AttributeSetLivingBeing
+		AttributeSetLivingBeing = Cast<UMHAttributeSetLivingBeing>(PS->GetAttributeSetPlayer());
+		AttributeSetPlayer = PS->GetAttributeSetPlayer();
+
 		// AI won't have PlayerControllers so we can init again here just to be sure. No harm in initing twice for heroes that have PlayerControllers.
 		PS->GetAbilitySystemComponent()->InitAbilityActorInfo(PS, this);
+
+		// If we handle players disconnecting and rejoining in the future, we'll have to change this so that possession from rejoining doesn't reset attributes.
+		// For now assume possession = spawn/respawn.
+		InitializeAttributes();
+		
+		// Respawn specific things that won't affect first possession.
+
+		// Forcibly set the DeadTag count to 0
+		AbilitySystemComponent->SetTagMapCount(DeadTag, 0);
+
+		// Set Health/Mana/Stamina to their max. This is only necessary for *Respawn*.
+		SetHealth(GetMaxHealth());
+		//SetMana(GetMaxMana());
+		//SetStamina(GetMaxStamina());
+
+		// End respawn specific things
+		AddStartupEffects();
+
+		AddCharacterAbilities();
 	}
 }
 
@@ -99,6 +124,10 @@ void AMHPlayerCharacter::OnRep_PlayerState()
 	{
 		// Set the ASC for clients. Server does this in PossessedBy.
 		AbilitySystemComponent = Cast<UMHAbilitySystemComponent>(PS->GetAbilitySystemComponent());
+
+		// Since AttributeSetPlayer is a subclass of AttributeSetLivingBeing
+		AttributeSetLivingBeing = Cast<UMHAttributeSetLivingBeing>(PS->GetAttributeSetPlayer());
+		AttributeSetPlayer = PS->GetAttributeSetPlayer();
 
 		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
@@ -239,9 +268,4 @@ FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentIn
 		co_await UE5Coro::Latent::NextTick();
 	}
 	co_return;
-}
-
-UAbilitySystemComponent* AMHPlayerCharacter::GetAbilitySystemComponent() const
-{
-	return AbilitySystemComponent;
 }

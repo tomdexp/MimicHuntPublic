@@ -12,4 +12,10 @@ class MIMICHUNT_API UMHAbilitySystemComponent : public UAbilitySystemComponent
 
 public:
 	UMHAbilitySystemComponent();
+
+	UPROPERTY()
+	bool bCharacterAbilitiesGiven = false;
+
+	UPROPERTY()
+	bool bStartupEffectsApplied = false;
 };

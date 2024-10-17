@@ -35,7 +35,6 @@ void UMHAttributeSetLivingBeing::PreAttributeChange(const FGameplayAttribute& At
 	{
 		AdjustAttributeForMaxChange(Health, MaxHealth, NewValue, GetHealthAttribute());
 	}
-
 }
 
 void UMHAttributeSetLivingBeing::OnRep_Health(const FGameplayAttributeData& OldHealth)

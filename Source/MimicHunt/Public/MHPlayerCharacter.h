@@ -1,17 +1,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AbilitySystemInterface.h"
 #include "Core/MHLivingBeing.h"
 #include "UE5Coro/UnrealTypes.h"
 #include "MHPlayerCharacter.generated.h"
 
+class UMHAttributeSetPlayer;
 class UMHAbilitySystemComponent;
 class UMHPlayerData;
 class UCameraComponent;
 
 UCLASS()
-class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing, public IAbilitySystemInterface
+class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing
 {
 	GENERATED_BODY()
 
@@ -69,8 +69,5 @@ public:
 	/* 						GAMEPLAY ABILITY SYSTEM			                */
 	/************************************************************************/
 	UPROPERTY()
-	TObjectPtr<UMHAbilitySystemComponent> AbilitySystemComponent;
-
-	// Implement IAbilitySystemInterface
-	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
+	TObjectPtr<UMHAttributeSetPlayer> AttributeSetPlayer;
 };
