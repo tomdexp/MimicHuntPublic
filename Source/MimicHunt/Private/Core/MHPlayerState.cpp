@@ -1,10 +1,19 @@
 #include "Core/MHPlayerState.h"
 
+#include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
 LL_FILE_CVAR(PlayerState);
 
+
+AMHPlayerState::AMHPlayerState()
+{
+	AbilitySystemComponent = CreateDefaultSubobject<UMHAbilitySystemComponent>(TEXT("AbilitySystemComponent"));
+	AbilitySystemComponent->SetIsReplicated(true);
+	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
+	NetUpdateFrequency = 50.0f;
+}
 
 void AMHPlayerState::Server_SetIsReadyInLobby_Implementation(bool bNewIsReadyInLobby)
 {

@@ -1,15 +1,17 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AbilitySystemInterface.h"
 #include "Core/MHLivingBeing.h"
 #include "UE5Coro/UnrealTypes.h"
 #include "MHPlayerCharacter.generated.h"
 
+class UMHAbilitySystemComponent;
 class UMHPlayerData;
 class UCameraComponent;
 
 UCLASS()
-class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing
+class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
@@ -32,6 +34,8 @@ public:
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMeshComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
 
 	void UpdateMovementSpeed();
 	
@@ -60,4 +64,13 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
 	FVoidCoroutine WaitForPlayerState(FLatentActionInfo LatentInfo);
+
+	/************************************************************************/
+	/* 						GAMEPLAY ABILITY SYSTEM			                */
+	/************************************************************************/
+	UPROPERTY()
+	TObjectPtr<UMHAbilitySystemComponent> AbilitySystemComponent;
+
+	// Implement IAbilitySystemInterface
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 };
