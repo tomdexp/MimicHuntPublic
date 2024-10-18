@@ -4,12 +4,18 @@
 #include "EnhancedInputSubsystemInterface.h"
 #include "EnhancedInputSubsystems.h"
 #include "MHPlayerCharacter.h"
+#include "Core/MHCheatManager.h"
 #include "Data/MHPlayerData.h"
 #include "UserSettings/EnhancedInputUserSettings.h"
 #include "Utils/LLog.h"
 
 LL_FILE_CVAR(MHPlayerController);
 
+
+AMHPlayerController::AMHPlayerController()
+{
+	CheatClass = UMHCheatManager::StaticClass();
+}
 
 void AMHPlayerController::BeginPlay()
 {

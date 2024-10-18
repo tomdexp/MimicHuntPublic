@@ -213,6 +213,11 @@ void AMHPlayerCharacter::Jump()
 void AMHPlayerCharacter::PrimaryActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::PrimaryActionPressed");
+	// Send gameplay event to the ability system, the tag is "Event.Ability.SimpleRaycastDamage"
+	FGameplayEventData EventData;
+	EventData.EventTag = FGameplayTag::RequestGameplayTag(FName("Event.Ability.SimpleRaycastDamage"));
+	int32 TriggeredAbilitiesCount = AbilitySystemComponent->HandleGameplayEvent(EventData.EventTag, &EventData);
+	LL_DBG(this, "AMHPlayerCharacter::PrimaryActionPressed : TriggeredAbilitiesCount {0}", TriggeredAbilitiesCount);
 }
 
 void AMHPlayerCharacter::PrimaryActionReleased()

@@ -17,6 +17,8 @@ class MIMICHUNT_API AMHPlayerController : public APlayerController
 {
 	GENERATED_BODY()
 public:
+	AMHPlayerController();
+	
 	virtual void BeginPlay() override;
 	virtual void SetupInputComponent() override;
 

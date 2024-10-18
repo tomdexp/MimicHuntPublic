@@ -43,9 +43,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility")
 	EMHAbilityActivationType ActivationType = EMHAbilityActivationType::Undefined;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToTagEvent"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToTagEvent", EditConditionHides = true))
 	FGameplayTag EventTag;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToInput"))
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToInput", EditConditionHides = true))
 	EMHAbilityActivationInputType ActivationInputType = EMHAbilityActivationInputType::Undefined;
 };
