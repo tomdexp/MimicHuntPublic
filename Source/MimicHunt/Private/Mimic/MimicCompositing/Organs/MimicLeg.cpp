@@ -1,37 +1,40 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Mimic/MimicCompositing/MimicOrgan.h"
+#include "Mimic/MimicCompositing/Organs/MimicLeg.h"
 
 
 // Sets default values
-AMimicOrgan::AMimicOrgan()
+AMimicLeg::AMimicLeg()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 // Called when the game starts or when spawned
-void AMimicOrgan::BeginPlay()
+void AMimicLeg::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void AMimicOrgan::OnMimicBirth(const AActor* Mimic)
+void AMimicLeg::OnMimicBirth(const AActor* Mimic)
 {
+	Super::OnMimicBirth(Mimic);
 }
 
-void AMimicOrgan::OnMimicWake(const AActor* Mimic)
+void AMimicLeg::OnMimicWake(const AActor* Mimic)
 {
+	Super::OnMimicWake(Mimic);
 }
 
-void AMimicOrgan::OnMimicSleep(const AActor* Mimic)
+void AMimicLeg::OnMimicSleep(const AActor* Mimic)
 {
+	Super::OnMimicSleep(Mimic);
 }
 
 // Called every frame
-void AMimicOrgan::Tick(float DeltaTime)
+void AMimicLeg::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
