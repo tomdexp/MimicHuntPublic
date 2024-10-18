@@ -5,7 +5,14 @@
 
 FRigUnit_NewFootTarget_Execute()
 {
-	//This first part calculate how behind the foot is relative to the direction of the mimic
+	//If the movement is purely on the Z axis (up down) it's pointless to move the foot
+	if(abs(Direction.X)<0.001 && abs(Direction.Y)<0.001)
+	{
+		NewFootTarget=PreviousFootTarget;
+		return;
+	};
+	
+	//Previously, the size of the step was based on how much the foot was behind but it was scrapped
 	// FVector3f diff=PreviousFootTarget-LegAttachmentPosition;
 	// diff.Z=0;
 	// float behindnessFactor=FVector3f::DotProduct(diff,Direction);
@@ -16,9 +23,19 @@ FRigUnit_NewFootTarget_Execute()
 	//this part the same after the step
 	float dotAlongPerpendicularToDirection=FVector::DotProduct((legAttachmentToFoot),perpendicularToDirection);
 
+	//If the feet got really far the dot along perpendicular direction can get huge, so we bring it back to a human level
+	if(dotAlongPerpendicularToDirection*dotAlongPerpendicularToDirection>MaxDistanceSqr)
+	{
+		dotAlongPerpendicularToDirection=0.5f*sqrt(MaxDistanceSqr);
+	}
 	//We need to compute the new target position so that if you stop moving now, and foot move, the leg will be as stretched as it can be.
 	//Meaning the vector LegAttachment-NewFootTarget should have a norm equal to the max distance
 	float remainingDistanceSqr=MaxDistanceSqr-dotAlongPerpendicularToDirection*dotAlongPerpendicularToDirection-legAttachmentToFoot.Z*legAttachmentToFoot.Z;
+	if(remainingDistanceSqr<0)
+	{
+		NewFootTarget=PreviousFootTarget;
+		return;
+	};
 
 	NewFootTarget=LegAttachmentPosition+perpendicularToDirection*dotAlongPerpendicularToDirection+Direction*sqrt(remainingDistanceSqr);
 	NewFootTarget.Z=PreviousFootTarget.Z;
