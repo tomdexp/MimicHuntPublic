@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "OrganBundle.h"
 #include "Components/SceneComponent.h"
+#include "Mimic/Mimic.h"
 #include "FurnitureJoint.generated.h"
 
 //This class represent the joint between two parts of a furniture piece, where you can add mimic eyes, legs etc.
@@ -25,10 +26,12 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-	void OnMimicBirth(const AActor* Mimic);
-	void OnMimicWake(const AActor* Mimic);
-	void OnMimicSleep(const AActor* Mimic);
+	void OnMimicBirth();
+	void OnMimicWake();
+	void OnMimicSleep();
 
+	UPROPERTY(BlueprintReadOnly)
+	AMimic* Mimic;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Furniture Joint")
 	TArray<UOrganBundle*> OrganBundles;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Furniture Joint")
@@ -52,4 +55,7 @@ public:
 	UStaticMesh* ParentChunkMesh=nullptr;
 	UPROPERTY()
 	UStaticMesh* ChildChunkMesh=nullptr;
+
+	UPROPERTY()
+	AMimicOrgan* Organ=nullptr;
 };

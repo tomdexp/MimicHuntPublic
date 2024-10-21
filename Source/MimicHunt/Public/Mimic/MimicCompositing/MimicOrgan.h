@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Mimic/Mimic.h"
 #include "MimicOrgan.generated.h"
 
 UCLASS()
@@ -14,20 +15,25 @@ class MIMICHUNT_API AMimicOrgan : public AActor
 public:
 	// Sets default values for this actor's properties
 	AMimicOrgan();
-
+	virtual void OnMimicBirth();
+	virtual void OnMimicWake();
+	virtual void OnMimicSleep();
+	
+	void Initialize(AMimic* mimic, UChildActorComponent* ownerComponent);
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintImplementableEvent, Category = "MimicOrgan")
-	void OnMimicBirthEvent(const AActor* Mimic);
+	void OnMimicBirthEvent();
 	UFUNCTION(BlueprintImplementableEvent, Category = "MimicOrgan")
-	void OnMimicWakeEvent(const AActor* Mimic);
+	void OnMimicWakeEvent();
 	UFUNCTION(BlueprintImplementableEvent, Category = "MimicOrgan")
-	void OnMimicSleepEvent(const AActor* Mimic);
+	void OnMimicSleepEvent();
 	
-	virtual void OnMimicBirth(const AActor* Mimic);
-	virtual void OnMimicWake(const AActor* Mimic);
-	virtual void OnMimicSleep(const AActor* Mimic);
+	UPROPERTY(BlueprintReadOnly)
+	UChildActorComponent* _ownerComponent=nullptr;
+	UPROPERTY(BlueprintReadOnly)
+	AMimic* _mimic=nullptr;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

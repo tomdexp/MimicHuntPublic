@@ -3,6 +3,8 @@
 
 #include "Mimic/MimicCompositing/MimicOrgan.h"
 
+#include "Mimic/MimicCompositing/FurnitureJoint.h"
+
 
 // Sets default values
 AMimicOrgan::AMimicOrgan()
@@ -15,19 +17,27 @@ AMimicOrgan::AMimicOrgan()
 void AMimicOrgan::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-void AMimicOrgan::OnMimicBirth(const AActor* Mimic)
+void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent)
 {
+	_mimic = mimic;
+	_ownerComponent = ownerComponent;
 }
 
-void AMimicOrgan::OnMimicWake(const AActor* Mimic)
+void AMimicOrgan::OnMimicBirth()
 {
+	OnMimicBirthEvent();
 }
 
-void AMimicOrgan::OnMimicSleep(const AActor* Mimic)
+void AMimicOrgan::OnMimicWake()
 {
+	OnMimicWakeEvent();
+}
+
+void AMimicOrgan::OnMimicSleep()
+{
+	OnMimicSleepEvent();
 }
 
 // Called every frame

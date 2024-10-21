@@ -19,9 +19,12 @@ public:
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-	virtual void OnMimicBirth(const AActor* Mimic) override;
-	virtual void OnMimicWake(const AActor* Mimic) override;
-	virtual void OnMimicSleep(const AActor* Mimic) override;
+	virtual void OnMimicBirth() override;
+	virtual void OnMimicWake() override;
+	virtual void OnMimicSleep() override;
+	//The rotation we apply to the leg on start based on its position relative to the mimic 
+	UPROPERTY(BlueprintReadOnly)
+	float _legStartAngle;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

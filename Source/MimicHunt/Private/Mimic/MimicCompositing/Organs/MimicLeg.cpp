@@ -15,22 +15,26 @@ AMimicLeg::AMimicLeg()
 void AMimicLeg::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
-void AMimicLeg::OnMimicBirth(const AActor* Mimic)
+void AMimicLeg::OnMimicBirth()
 {
-	Super::OnMimicBirth(Mimic);
+	FVector mimicRootPosition=_mimic->GetActorLocation();
+	//Find the direction of Mimic to self
+	FVector rootToJoint=GetActorLocation()-mimicRootPosition;
+	FVector direction=rootToJoint.GetSafeNormal();
+	_legStartAngle=FMath::RadiansToDegrees(atan2(direction.Y,direction.X));
+	Super::OnMimicBirth();
 }
 
-void AMimicLeg::OnMimicWake(const AActor* Mimic)
+void AMimicLeg::OnMimicWake()
 {
-	Super::OnMimicWake(Mimic);
+	Super::OnMimicWake();
 }
 
-void AMimicLeg::OnMimicSleep(const AActor* Mimic)
+void AMimicLeg::OnMimicSleep()
 {
-	Super::OnMimicSleep(Mimic);
+	Super::OnMimicSleep();
 }
 
 // Called every frame

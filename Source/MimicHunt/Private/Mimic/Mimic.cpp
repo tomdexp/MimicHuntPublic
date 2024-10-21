@@ -28,14 +28,8 @@ void AMimic::BeginPlay()
 void AMimic::OnConstruction(const FTransform& Transform)
 {
 	Super::OnConstruction(Transform);
-
-		FurnitureJoints=TArray<UFurnitureJoint*>();
+	
 	TSet<UActorComponent*> components=GetComponents();
-	for(auto component : components)
-	{
-		if(component->GetClass()!=UFurnitureJoint::StaticClass()) continue;
-		FurnitureJoints.Add(Cast<UFurnitureJoint>(component));
-	}
 
 	//We iterate a first time to create an map of all the furniture chunks by name and find the root to make it invisible
 	TMap<FString, UStaticMeshComponent*> staticMeshMapByName=TMap<FString,UStaticMeshComponent*>();
@@ -78,31 +72,23 @@ void AMimic::OnConstruction(const FTransform& Transform)
 			continue;
 		}
 		jointComponent->ChildChunkComponent=staticMeshMapByName[jointComponent->ChildChunkName];
+		jointComponent->Mimic=this;
 	}
 }
 
 void AMimic::MimicBirth()
 {
-	for(auto joint : FurnitureJoints)
-	{
-		joint->OnMimicBirth(this);
-	}
+	OnMimicBirthDelegate.Broadcast();
 }
 
 void AMimic::MimicWake()
 {
-	for(auto joint : FurnitureJoints)
-	{
-		joint->OnMimicWake(this);
-	}
+	OnMimicWakeDelegate.Broadcast();
 }
 
 void AMimic::MimicSleep()
 {
-	for(auto joint : FurnitureJoints)
-	{
-		joint->OnMimicSleep(this);
-	}
+	OnMimicSleepDelegate.Broadcast();
 }
 
 // Called every frame

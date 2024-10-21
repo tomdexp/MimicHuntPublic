@@ -3,6 +3,9 @@
 
 #include "Mimic/MimicCompositing/FurnitureJoint.h"
 
+#include "Mimic/MimicCompositing/MimicOrgan.h"
+#include "Mimic/MimicCompositing/OrganBundle.h"
+
 // Sets default values for this component's properties
 UFurnitureJoint::UFurnitureJoint()
 {
@@ -19,6 +22,10 @@ void UFurnitureJoint::BeginPlay()
 	Super::BeginPlay();
 	ParentChunkMesh=ParentChunkComponent->GetStaticMesh();
 	ChildChunkMesh=ChildChunkComponent->GetStaticMesh();
+	Mimic=Cast<AMimic>(GetOwner());
+	OnMimicBirth();
+	Mimic->OnMimicWakeDelegate.AddUObject(this,&UFurnitureJoint::OnMimicWake);
+	Mimic->OnMimicSleepDelegate.AddUObject(this,&UFurnitureJoint::OnMimicSleep);
 }
 
 // Called every frame
@@ -29,7 +36,7 @@ void UFurnitureJoint::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	// ...
 }
 
-void UFurnitureJoint::OnMimicBirth(const AActor* Mimic)
+void UFurnitureJoint::OnMimicBirth()
 {
 	if(GetChildActor()!=nullptr)
 	{
@@ -61,10 +68,13 @@ void UFurnitureJoint::OnMimicBirth(const AActor* Mimic)
 	FOrganBundleEntry randomEntry = ponderatedArray[randomIndex];
 	if(randomEntry.Organ==nullptr) return;
 	SetChildActorClass(randomEntry.Organ);
-	OnMimicSleep(Mimic);
+	Organ=Cast<AMimicOrgan>(GetChildActor());
+	Organ->Initialize(Mimic,this);
+	Organ->OnMimicBirth();
+	OnMimicSleep();
 }
 
-void UFurnitureJoint::OnMimicWake(const AActor* Mimic)
+void UFurnitureJoint::OnMimicWake()
 {
 	if(HideChildOnMimicWake)
 	{
@@ -75,9 +85,11 @@ void UFurnitureJoint::OnMimicWake(const AActor* Mimic)
 		ParentChunkComponent->SetStaticMesh(nullptr);
 	}
 	SetWorldScale3D(FVector::One());
+	if(Organ==nullptr) return;
+	Organ->OnMimicWake();
 }
 
-void UFurnitureJoint::OnMimicSleep(const AActor* Mimic)
+void UFurnitureJoint::OnMimicSleep()
 {
 	if(HideChildOnMimicWake)
 	{
@@ -88,4 +100,6 @@ void UFurnitureJoint::OnMimicSleep(const AActor* Mimic)
 		ParentChunkComponent->SetStaticMesh(ParentChunkMesh);
 	}
 	SetWorldScale3D(FVector::Zero());
+	if(Organ==nullptr) return;
+	Organ->OnMimicSleep();
 }

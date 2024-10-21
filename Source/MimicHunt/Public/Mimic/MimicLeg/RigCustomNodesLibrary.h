@@ -7,6 +7,30 @@
 #include "Units/RigUnit.h"
 #include "RigCustomNodesLibrary.generated.h"
 
+//Rotate leg along the Z (up) Axis and move the foot position accordingly
+USTRUCT(meta = (DisplayName = "Rotate leg", Category = "Custom"))
+struct MIMICHUNT_API FRigUnit_RotateLeg: public FRigUnit {
+	GENERATED_BODY()
+
+	FRigUnit_RotateLeg()
+		: Angle(0), PreviousFootTarget(0), LegAttachmentPosition(0),NewFootTarget(0){}
+
+	RIGVM_METHOD()
+	virtual void Execute() override;
+
+	UPROPERTY(meta=(Input))
+	float Angle;
+	
+	UPROPERTY(meta = (Input))
+	FVector PreviousFootTarget;
+
+	UPROPERTY(meta = (Input))
+	FVector LegAttachmentPosition;
+
+	UPROPERTY(meta = (Output))
+	FVector NewFootTarget;
+};
+
 USTRUCT(meta = (DisplayName = "New foot target", Category = "Custom"))
 struct MIMICHUNT_API FRigUnit_NewFootTarget: public FRigUnit {
 	GENERATED_BODY()

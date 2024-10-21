@@ -3,6 +3,18 @@
 
 #include "Mimic/MimicLeg/RigCustomNodesLibrary.h"
 
+FRigUnit_RotateLeg_Execute()
+{
+	FVector2d footPosition=FVector2d(PreviousFootTarget.X, PreviousFootTarget.Y);
+	FVector2d legAttachment=FVector2d(LegAttachmentPosition.X, LegAttachmentPosition.Y);
+	FVector2d legToFoot=footPosition-legAttachment;
+	float angleAsRadians=FMath::DegreesToRadians(Angle);
+	float rotatedX=legToFoot.X*FMath::Cos(angleAsRadians)-legToFoot.Y*FMath::Sin(angleAsRadians);
+	float rotatedY=legToFoot.X*FMath::Sin(angleAsRadians)+legToFoot.Y*FMath::Cos(angleAsRadians);
+
+	NewFootTarget=FVector(LegAttachmentPosition.X+rotatedX,LegAttachmentPosition.Y+rotatedY,PreviousFootTarget.Z);
+}
+
 FRigUnit_NewFootTarget_Execute()
 {
 	//If the movement is purely on the Z axis (up down) it's pointless to move the foot

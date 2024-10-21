@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "MimicCompositing/FurnitureJoint.h"
 #include "Mimic.generated.h"
 
-UCLASS()
+DECLARE_MULTICAST_DELEGATE(FOnMimicBirth)
+DECLARE_MULTICAST_DELEGATE(FOnMimicWake)
+DECLARE_MULTICAST_DELEGATE(FOnMimicSleep)
 
+UCLASS()
 class MIMICHUNT_API AMimic : public AActor
 {
 	GENERATED_BODY()
@@ -26,9 +28,11 @@ protected:
 	void MimicWake();
 	UFUNCTION(BlueprintCallable,Category="Mimic")
 	void MimicSleep();
-	UPROPERTY()
-	TArray<UFurnitureJoint*> FurnitureJoints;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	FOnMimicBirth OnMimicBirthDelegate;
+	FOnMimicWake OnMimicWakeDelegate;
+	FOnMimicSleep OnMimicSleepDelegate;
 };
