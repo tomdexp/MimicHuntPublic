@@ -58,6 +58,17 @@ float AMHLivingBeing::GetSpeed() const
 	return Velocity.Size();
 }
 
+float AMHLivingBeing::GetViewAngleVertical() const
+{
+	// Return the current pitch rotation clamped between -90 and 90 degrees
+	float Pitch = GetControlRotation().Pitch;
+	if (Pitch > 180.0f)
+	{
+		Pitch -= 360.0f;
+	}
+	return FMath::Clamp(Pitch, -90.0f, 90.0f);
+}
+
 float AMHLivingBeing::GetMovementDirectionX() const
 {
 	// Get the forward/backward velocity
