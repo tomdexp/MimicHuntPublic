@@ -40,7 +40,7 @@ public:
 	float GetSpeed() const;
 
 	/**
-	 * \brief Returns the current pitch rotation clamped between -90 (looking down) and 90 (looking at the sky) degrees.
+	 * Returns the current pitch rotation clamped between -90 (looking down) and 90 (looking at the sky) degrees.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
 	float GetViewAngleVertical() const;

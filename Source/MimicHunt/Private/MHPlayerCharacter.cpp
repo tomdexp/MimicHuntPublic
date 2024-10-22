@@ -29,6 +29,7 @@ AMHPlayerCharacter::AMHPlayerCharacter()
 	FirstPersonCameraComponent->SetRelativeLocation(FVector(-10.f, 0.f, 60.f)); // Position the camera
 	FirstPersonCameraComponent->bUsePawnControlRotation = true;
 	FirstPersonCameraComponent->bCameraMeshHiddenInGame = false; // Show the camera mesh in game
+	FirstPersonCameraComponent->SetIsReplicated(true); // Replicate the camera component
 
 	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
 	FirstPersonMeshComponent = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FirstPersonCharacterMeshComponent"));
@@ -66,11 +67,30 @@ void AMHPlayerCharacter::BeginPlay()
 	}
 }
 
+void AMHPlayerCharacter::Tick(float DeltaSeconds)
+{
+	Super::Tick(DeltaSeconds);
+	
+	// Only update if we are the locally controlled player
+	if (IsLocallyControlled())
+	{
+		FRotator NewRotation = FirstPersonCameraComponent->GetComponentRotation();
+
+		// Optionally, you can check if the rotation has actually changed before sending it
+		if (!NewRotation.Equals(ReplicatedCameraRotation, 1.0f)) // A tolerance of 1.0 degree for optimization
+		{
+			// Update the replicated rotation
+			Server_UpdateCameraRotation(NewRotation);
+		}
+	}
+}
+
 
 void AMHPlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHPlayerCharacter, bIsSprinting);
+	DOREPLIFETIME(AMHPlayerCharacter, ReplicatedCameraRotation);
 }
 
 void AMHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -266,6 +286,27 @@ void AMHPlayerCharacter::OnRep_IsSprinting()
 	UpdateMovementSpeed();
 }
 
+void AMHPlayerCharacter::OnRep_CameraRotation()
+{
+	// Update the camera's rotation on the client when replication occurs
+	if (FirstPersonCameraComponent)
+	{
+		FirstPersonCameraComponent->SetWorldRotation(ReplicatedCameraRotation);
+	}
+}
+
+void AMHPlayerCharacter::Server_UpdateCameraRotation_Implementation(FRotator NewRotation)
+{
+	// Update the replicated camera rotation on the server
+	ReplicatedCameraRotation = NewRotation;
+
+	// Update the camera's rotation on the server's version of the character (might be not needed)
+	if (FirstPersonCameraComponent)
+	{
+		FirstPersonCameraComponent->SetWorldRotation(ReplicatedCameraRotation);
+	}
+}
+
 FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentInfo)
 {
 	while (!GetPlayerState())
@@ -273,4 +314,15 @@ FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentIn
 		co_await UE5Coro::Latent::NextTick();
 	}
 	co_return;
+}
+
+FVector AMHPlayerCharacter::GetLookAtTarget() const
+{
+	// TODO : Replicate this
+
+	FVector Start = FirstPersonCameraComponent->GetComponentLocation();
+	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
+	FVector End = Start + (ForwardVector * 100.0f); // 1 meter in front
+
+	return End;
 }

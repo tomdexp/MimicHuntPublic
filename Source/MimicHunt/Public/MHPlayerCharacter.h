@@ -20,6 +20,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
@@ -62,8 +63,27 @@ public:
 	UFUNCTION()
 	void OnRep_IsSprinting();
 
+	// Replicated variable for the camera's rotation (we need it for Look At animation)
+	UPROPERTY(ReplicatedUsing = OnRep_CameraRotation)
+	FRotator ReplicatedCameraRotation;
+
+	// Declare the function to handle replication updates
+	UFUNCTION()
+	void OnRep_CameraRotation();
+
+	UFUNCTION(Server, Unreliable)
+	void Server_UpdateCameraRotation(FRotator NewRotation);
+	
+	void Server_UpdateCameraRotation_Implementation(FRotator NewRotation);
+
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
 	FVoidCoroutine WaitForPlayerState(FLatentActionInfo LatentInfo);
+
+	/**
+ * Returns a target that 1 meter in front of the character eyes, but only in the vertical plane.
+ */
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	FVector GetLookAtTarget() const;
 
 	/************************************************************************/
 	/* 						GAMEPLAY ABILITY SYSTEM			                */
