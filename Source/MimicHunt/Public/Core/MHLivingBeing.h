@@ -37,10 +37,19 @@ public:
 	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	float GetSpeed() const;
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
 	float GetMovementDirectionX() const;
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
 	float GetMovementDirectionY() const;
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	float GetMovementDirectionXNormalized() const;
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	float GetMovementDirectionYNormalized() const;
 	
 	/************************************************************************/
 	/* 						GAMEPLAY ABILITY SYSTEM			                */

@@ -50,7 +50,31 @@ float AMHLivingBeing::GetMaxHealth() const
 	return 0.0f;
 }
 
+float AMHLivingBeing::GetSpeed() const
+{
+	// Get the velocity
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	return Velocity.Size();
+}
+
 float AMHLivingBeing::GetMovementDirectionX() const
+{
+	// Get the forward/backward velocity
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	return FVector::DotProduct(GetActorForwardVector(), Velocity);
+}
+
+float AMHLivingBeing::GetMovementDirectionY() const
+{
+	// Get the right/left velocity
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0;
+	return FVector::DotProduct(GetActorRightVector(), Velocity);
+}
+
+float AMHLivingBeing::GetMovementDirectionXNormalized() const
 {
 	// Get the forward/backward velocity
 	FVector Velocity = GetVelocity();
@@ -59,7 +83,7 @@ float AMHLivingBeing::GetMovementDirectionX() const
 	return FVector::DotProduct(GetActorForwardVector(), Velocity);
 }
 
-float AMHLivingBeing::GetMovementDirectionY() const
+float AMHLivingBeing::GetMovementDirectionYNormalized() const
 {
 	// Get the right/left velocity
 	FVector Velocity = GetVelocity();
