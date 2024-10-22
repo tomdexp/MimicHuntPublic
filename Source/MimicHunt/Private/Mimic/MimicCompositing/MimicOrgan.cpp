@@ -3,6 +3,7 @@
 
 #include "Mimic/MimicCompositing/MimicOrgan.h"
 
+#include "Mimic/MimicCompositing/AttachPoint.h"
 #include "Mimic/MimicCompositing/FurnitureJoint.h"
 
 
@@ -23,6 +24,17 @@ void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent
 {
 	_mimic = mimic;
 	_ownerComponent = ownerComponent;
+	TArray<UActorComponent*> attachPointsActorComponents=K2_GetComponentsByClass(UAttachPoint::StaticClass());
+	for (UActorComponent* attachPointActorComponent : attachPointsActorComponents)
+	{
+		auto attachPoint=Cast<UAttachPoint>(attachPointActorComponent);
+		if(attachPoint->IsStart)
+		{
+			StartAttachPoint=attachPoint;
+			continue;
+		}
+		EndAttachPoint=attachPoint;
+	}
 }
 
 void AMimicOrgan::OnMimicBirth()

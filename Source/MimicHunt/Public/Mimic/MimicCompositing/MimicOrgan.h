@@ -20,6 +20,14 @@ public:
 	virtual void OnMimicSleep();
 	
 	void Initialize(AMimic* mimic, UChildActorComponent* ownerComponent);
+
+	//A "single" organ is attached to only one chunk instead of two
+	UPROPERTY(EditAnywhere)
+	bool IsSingle;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic")
+	bool IsPhysicked;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="!IsSingle"))
+	bool MakeChildChunkPhysicked;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -37,4 +45,9 @@ protected:
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+	UPROPERTY()
+	USceneComponent* StartAttachPoint=nullptr;
+	UPROPERTY()
+	USceneComponent* EndAttachPoint=nullptr;
 };

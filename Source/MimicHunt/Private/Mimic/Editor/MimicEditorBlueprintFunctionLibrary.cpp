@@ -3,6 +3,7 @@
 
 #include "Mimic/Editor/MimicEditorBlueprintFunctionLibrary.h"
 #include "Mimic/Mimic.h"
+#include "Mimic/MimicCompositing/AttachPoint.h"
 #include "Mimic/MimicCompositing/FurnitureJoint.h"
 #include "Utils/LLog.h"
 LL_FILE_CVAR(LogMimicEditor);
@@ -179,20 +180,35 @@ void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blu
 		if (!componentsByName.Contains(complementaryBeaconName))
 		{
 			UE_LOG(LogTemp, Error, TEXT("%s's name refers to a part named %s, but it doesnt exist"), *componentName,
-			       *complementaryBeaconName);
+				   *complementaryBeaconName);
 			continue;
 		}
 
 		auto complementaryBeaconHandle = componentsByName[complementaryBeaconName];
 		auto complementaryBeaconParentHandle = complementaryBeaconHandle.GetData()->GetParentHandle();
 
-		//The second beacon has a transform, we convert it to a transform relative to the first beacon
-		auto complementaryBeaconStaticMeshComponent=Cast<UStaticMeshComponent>(complementaryBeaconHandle.GetData()->GetObject());
-		auto parentStaticMeshComponent=Cast<UStaticMeshComponent>(parentHandle.GetData()->GetObject());
-		FTransform complementaryBeaconWorldTransform=GetWorldTransform(complementaryBeaconHandle,subobjectSubsystem);
-		FTransform parentWorldTransform=GetWorldTransform(parentHandle,subobjectSubsystem);
-		FTransform complementaryBeaconRelativeTransform=complementaryBeaconWorldTransform.GetRelativeTransform(parentWorldTransform);
+		//We create a new scene component for the complementary beacon
+		auto complementaryBeaconSceneComponent=Cast<USceneComponent>(complementaryBeaconHandle.GetData()->GetObject());
+		UAttachPoint* complementaryBeaconComponent=NewObject<UAttachPoint>();
+		complementaryBeaconComponent->CreationMethod=EComponentCreationMethod::UserConstructionScript;
+		complementaryBeaconComponent->SetMobility(EComponentMobility::Movable);
+		complementaryBeaconComponent->SetRelativeTransform(complementaryBeaconSceneComponent->GetRelativeTransform());
+		FString complementaryBeaconComponentName="End_"+linkedChunkName+"_TO_"+complementaryBeaconParentHandle.GetData()->GetAssetName().ToString();
+		complementaryBeaconComponent->Rename(*complementaryBeaconComponentName);
 
+		//And add it using the subsystem
+		FAddNewSubobjectParams params;
+		params.ParentHandle = complementaryBeaconParentHandle;
+		params.NewClass = UAttachPoint::StaticClass();
+		params.BlueprintContext = Blueprint;
+		params.AssetOverride = complementaryBeaconComponent;
+		FText failureReason = FText::FromString(TEXT(""));
+		subobjectSubsystem->AddNewSubobject(params, failureReason);
+		if (!failureReason.IsEmpty())
+		{
+			UE_LOG(LogTemp, Error, TEXT("Could not add furniture joint: %s"), *failureReason.ToString());
+		}
+		
 		//We create the new furniture joint
 		auto staticMeshComponent = Cast<UStaticMeshComponent>(subobjectData->GetObject());
 		UFurnitureJoint* furnitureJoint = NewObject<UFurnitureJoint>();
@@ -201,23 +217,21 @@ void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blu
 		furnitureJoint->ChildChunkName=complementaryBeaconParentHandle.GetData()->GetAssetName().ToString();
 		furnitureJoint->SetMobility(EComponentMobility::Movable);
 		furnitureJoint->SetRelativeTransform(staticMeshComponent->GetRelativeTransform());
-		furnitureJoint->SecondAttachPointTransform=complementaryBeaconRelativeTransform;
+		furnitureJoint->EndAttachPointName=complementaryBeaconComponentName;
 		FString furnitureJointName="Joint_"+linkedChunkName;
 		furnitureJoint->Rename(*furnitureJointName);
 
 		//And add it using the subsystem
-		FAddNewSubobjectParams params;
 		params.ParentHandle = parentHandle;
 		params.NewClass = UFurnitureJoint::StaticClass();
 		params.BlueprintContext = Blueprint;
 		params.AssetOverride = furnitureJoint;
-		FText failureReason = FText::FromString(TEXT(""));
+		failureReason = FText::FromString(TEXT(""));
 		subobjectSubsystem->AddNewSubobject(params, failureReason);
 		if (!failureReason.IsEmpty())
 		{
 			UE_LOG(LogTemp, Error, TEXT("Could not add furniture joint: %s"), *failureReason.ToString());
 		}
 	}
-
 	subobjectSubsystem->DeleteSubobjects(contextHandle, beaconsHandles, Blueprint);
 }

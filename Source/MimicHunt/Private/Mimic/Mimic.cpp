@@ -31,13 +31,19 @@ void AMimic::OnConstruction(const FTransform& Transform)
 	
 	TSet<UActorComponent*> components=GetComponents();
 
-	//We iterate a first time to create an map of all the furniture chunks by name and find the root to make it invisible
+	//We iterate a first time to create an map of all the furniture chunks by name, same for attachments and find the root to make it invisible
+	TMap<FString, USceneComponent*> attachmentsMapByName=TMap<FString, USceneComponent*>();
 	TMap<FString, UStaticMeshComponent*> staticMeshMapByName=TMap<FString,UStaticMeshComponent*>();
 	for(auto component : components)
 	{
+		FString componentName=component->GetName();
+		if(component->GetClass()!=USceneComponent::StaticClass())
+		{
+			USceneComponent* sceneComponent=Cast<USceneComponent>(component);
+			attachmentsMapByName.Add(componentName,sceneComponent);
+		}
 		if(component->GetClass()!=UStaticMeshComponent::StaticClass()) continue;
 		auto staticMeshComponent =Cast<UStaticMeshComponent>(component);
-		FString componentName=component->GetName();
 
 		//The root is a static mesh component, we can't really replace it easily so we just make it invisible
 		if (componentName == "ROOT")
@@ -72,6 +78,10 @@ void AMimic::OnConstruction(const FTransform& Transform)
 			continue;
 		}
 		jointComponent->ChildChunkComponent=staticMeshMapByName[jointComponent->ChildChunkName];
+		if(attachmentsMapByName.Contains(jointComponent->EndAttachPointName))
+		{
+			jointComponent->EndAttachPoint=attachmentsMapByName[jointComponent->EndAttachPointName];
+		}
 		jointComponent->Mimic=this;
 	}
 }
