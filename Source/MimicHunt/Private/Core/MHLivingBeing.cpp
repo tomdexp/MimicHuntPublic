@@ -1,6 +1,6 @@
 #include "Core/MHLivingBeing.h"
 
-#include "Core/MHPlayerState.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
 #include "GameplayAbilitySystem/MHGameplayAbility.h"
 #include "Utils/LLog.h"
@@ -85,6 +85,34 @@ float AMHLivingBeing::GetMovementDirectionY() const
 	return FVector::DotProduct(GetActorRightVector(), Velocity);
 }
 
+// This method is directly copied from KismetAnimationLibrary::CalculateDirection
+float AMHLivingBeing::GetMovementDirection() const
+{
+	if (!GetVelocity().IsNearlyZero())
+	{
+		const FMatrix RotMatrix = FRotationMatrix(GetActorRotation());
+		const FVector ForwardVector = RotMatrix.GetScaledAxis(EAxis::X);
+		const FVector RightVector = RotMatrix.GetScaledAxis(EAxis::Y);
+		const FVector NormalizedVel = GetVelocity().GetSafeNormal2D();
+
+		// get a cos(alpha) of forward vector vs velocity
+		const float ForwardCosAngle = static_cast<float>(FVector::DotProduct(ForwardVector, NormalizedVel));
+		// now get the alpha and convert to degree
+		float ForwardDeltaDegree = FMath::RadiansToDegrees(FMath::Acos(ForwardCosAngle));
+
+		// depending on where right vector is, flip it
+		const float RightCosAngle = static_cast<float>(FVector::DotProduct(RightVector, NormalizedVel));
+		if (RightCosAngle < 0.f)
+		{
+			ForwardDeltaDegree *= -1.f;
+		}
+
+		return ForwardDeltaDegree;
+	}
+
+	return 0.f;
+}
+
 float AMHLivingBeing::GetMovementDirectionXNormalized() const
 {
 	// Get the forward/backward velocity
@@ -101,6 +129,12 @@ float AMHLivingBeing::GetMovementDirectionYNormalized() const
 	Velocity.Z = 0;
 	Velocity.Normalize();
 	return FVector::DotProduct(GetActorRightVector(), Velocity);
+}
+
+bool AMHLivingBeing::ShouldMove() const
+{
+	// Set Should Move to true only if ground speed is above a small threshold (to prevent incredibly small velocities from triggering animations) and if there is currently acceleration (input) applied.
+	return GetCharacterMovement()->GetCurrentAcceleration() != FVector::ZeroVector && GetSpeed() > 3.0f;
 }
 
 UAbilitySystemComponent* AMHLivingBeing::GetAbilitySystemComponent() const

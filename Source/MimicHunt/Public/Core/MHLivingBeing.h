@@ -43,19 +43,25 @@ public:
 	 * Returns the current pitch rotation clamped between -90 (looking down) and 90 (looking at the sky) degrees.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
-	float GetViewAngleVertical() const;
+	float GetViewAngleVertical() const; // Used for LookAt animation
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
-	float GetMovementDirectionX() const;
+	float GetMovementDirectionX() const; // Used for animations
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
-	float GetMovementDirectionY() const;
+	float GetMovementDirectionY() const; // Used for animations
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
-	float GetMovementDirectionXNormalized() const;
+	float GetMovementDirection() const; // Used for animations
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
-	float GetMovementDirectionYNormalized() const;
+	float GetMovementDirectionXNormalized() const; // Used for animations
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	float GetMovementDirectionYNormalized() const; // Used for animations
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	bool ShouldMove() const; // Used for animations
 	
 	/************************************************************************/
 	/* 						GAMEPLAY ABILITY SYSTEM			                */
