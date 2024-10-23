@@ -90,30 +90,38 @@ void UFurnitureJoint::OnMimicWake()
 	}
 	SetWorldScale3D(FVector::One());
 	if(Organ==nullptr) return;
+	
+	//Align the angle of the organ with the angle of the joints (regarding the direction of their Start attachment to end attachment vector)
+	FVector organStartToEnd=Organ->EndAttachPoint->GetComponentLocation()-Organ->StartAttachPoint->GetComponentLocation();
+	FVector jointStartToEnd=EndAttachPoint->GetComponentLocation()-this->GetComponentLocation();
+	FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,jointStartToEnd).Rotator();
+	Organ->GetRootComponent()->SetWorldRotation(lookAtRotation);
+
+	//Place the organ and child component accordingly, making sure their attachment points match
 	UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->StartAttachPoint,ParentChunkComponent,this);
 	UAttachPoint::PlaceChildRelativeToParent(ChildChunkComponent,EndAttachPoint,Organ->GetRootComponent(),Organ->EndAttachPoint);
 
+	//If the organ is physicked, we start the physicking
 	if(!Organ->IsPhysicked || Organ->PhysickedComponent==nullptr)
 	{
 		Organ->OnMimicWake();
 		return;
 	}
 
+	//Create the physic parameters, used for both physics joints
 	FConstraintInstance ConstraintInstance;
 	ConstraintInstance.SetDisableCollision(true);
-	// Verrouiller toutes les translations
 	ConstraintInstance.SetLinearXLimit(ELinearConstraintMotion::LCM_Locked, 0.0f);
 	ConstraintInstance.SetLinearYLimit(ELinearConstraintMotion::LCM_Locked, 0.0f);
 	ConstraintInstance.SetLinearZLimit(ELinearConstraintMotion::LCM_Locked, 0.0f);
-	
-	// Verrouiller toutes les rotations (Swing et Twist)
 	ConstraintInstance.SetAngularSwing1Limit(EAngularConstraintMotion::ACM_Limited, Organ->SwingAngle);
 	ConstraintInstance.SetAngularSwing2Limit(EAngularConstraintMotion::ACM_Limited, Organ->SwingAngle);
 	ConstraintInstance.SetAngularTwistLimit(EAngularConstraintMotion::ACM_Limited, Organ->TwistAngle);
 
 	ConstraintInstance.SetSoftSwingLimitParams(true,Organ->Stiffness,Organ->Damping,0,0);
 	ConstraintInstance.SetSoftTwistLimitParams(true,Organ->Stiffness,Organ->Damping,0,0);
-	
+
+	//Create the physic joint between joint's parent chunk and the organ
 	UPhysicsConstraintComponent* StartConstraintComp = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
 	StartConstraintComp->ConstraintInstance = ConstraintInstance;
 	StartConstraintComp->SetWorldLocation(this->GetComponentLocation());
@@ -122,11 +130,11 @@ void UFurnitureJoint::OnMimicWake()
 
 	if(ChildChunkComponent==nullptr || !Organ->MakeChildChunkPhysicked)
 	{
-		//Organ->PhysickedComponent->SetSimulatePhysics(true);
 		Organ->OnMimicWake();
 		return;
 	}
-	
+
+	//Create the physic joint between the organ and the joint's child chunk
 	ConstraintInstance.SetDisableCollision(true);
 	UPhysicsConstraintComponent* EndConstraintComp = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
 	EndConstraintComp->ConstraintInstance = ConstraintInstance;
