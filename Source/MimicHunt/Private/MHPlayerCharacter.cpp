@@ -76,10 +76,9 @@ void AMHPlayerCharacter::Tick(float DeltaSeconds)
 	{
 		FRotator NewRotation = FirstPersonCameraComponent->GetComponentRotation();
 
-		// Optionally, you can check if the rotation has actually changed before sending it
+		// Check if the rotation has actually changed before sending it
 		if (!NewRotation.Equals(ReplicatedCameraRotation, 1.0f)) // A tolerance of 1.0 degree for optimization
 		{
-			// Update the replicated rotation
 			Server_UpdateCameraRotation(NewRotation);
 		}
 	}
