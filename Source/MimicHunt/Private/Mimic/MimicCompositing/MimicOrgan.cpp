@@ -24,16 +24,31 @@ void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent
 {
 	_mimic = mimic;
 	_ownerComponent = ownerComponent;
-	TArray<UActorComponent*> attachPointsActorComponents=K2_GetComponentsByClass(UAttachPoint::StaticClass());
+	TArray<UActorComponent*> attachPointsActorComponents = K2_GetComponentsByClass(UAttachPoint::StaticClass());
 	for (UActorComponent* attachPointActorComponent : attachPointsActorComponents)
 	{
-		auto attachPoint=Cast<UAttachPoint>(attachPointActorComponent);
-		if(attachPoint->IsStart)
+		auto attachPoint = Cast<UAttachPoint>(attachPointActorComponent);
+		if (attachPoint->IsStart)
 		{
-			StartAttachPoint=attachPoint;
+			StartAttachPoint = attachPoint;
 			continue;
 		}
-		EndAttachPoint=attachPoint;
+		EndAttachPoint = attachPoint;
+	}
+	if (!IsPhysicked) return;
+	TArray<UActorComponent*> staticMeshComponents = K2_GetComponentsByClass(UStaticMeshComponent::StaticClass());
+	for (UActorComponent* staticMeshComponent : staticMeshComponents)
+	{
+		if (staticMeshComponent->GetName() != PhysickedComponentName) continue;
+		PhysickedComponent = Cast<UStaticMeshComponent>(staticMeshComponent);
+		break;
+	}
+	if (PhysickedComponent == nullptr)
+	{
+		UE_LOG(LogTemp, Error,
+		       TEXT("Could not find a component named %s in Organ %s, a physicked organ needs to have a PhysickedComponentName pointing to its main StaticMeshComponent"),
+		       *PhysickedComponentName, *GetName()
+		       );
 	}
 }
 
@@ -57,4 +72,3 @@ void AMimicOrgan::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-

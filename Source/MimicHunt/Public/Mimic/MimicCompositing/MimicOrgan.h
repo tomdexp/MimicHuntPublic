@@ -26,8 +26,18 @@ public:
 	bool IsSingle;
 	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic")
 	bool IsPhysicked;
-	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="!IsSingle"))
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
+	FString PhysickedComponentName;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="!IsSingle&&IsPhysicked"))
 	bool MakeChildChunkPhysicked;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
+	float TwistAngle=20;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
+	float SwingAngle=20;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
+	float Stiffness=50;
+	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
+	float Damping=5;
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -50,4 +60,6 @@ public:
 	USceneComponent* StartAttachPoint=nullptr;
 	UPROPERTY()
 	USceneComponent* EndAttachPoint=nullptr;
+	UPROPERTY()
+	UStaticMeshComponent* PhysickedComponent=nullptr;
 };

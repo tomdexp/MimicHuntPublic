@@ -33,11 +33,15 @@ void UAttachPoint::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
-//Returns the world transform of the child after being placed
-FTransform UAttachPoint::PlaceChildRelativeToParent(const USceneComponent* Child, const UAttachPoint* ChildAttachPoint,
-	const USceneComponent* Parent, const UAttachPoint* ParentAttachPoint)
+void UAttachPoint::PlaceChildRelativeToParent(USceneComponent* Child,USceneComponent* ChildAttachPoint,
+	const USceneComponent* Parent, const USceneComponent* ParentAttachPoint, bool RotateChild)
 {
-	FTransform NewChildTransform=Child->GetComponentTransform();
-	return NewChildTransform;
+	if(RotateChild)
+		Child->SetWorldRotation(Parent->GetComponentRotation());
+	//We can't just get the relative location with ChildAttachPoint->GetRelativeLocation because the coordinate would be scaled locally
+	FVector childAttachPointRelativeLocation=(ChildAttachPoint->GetComponentLocation()-Child->GetComponentLocation()); ;
+	FVector NewChildLocation=ParentAttachPoint->GetComponentLocation()-childAttachPointRelativeLocation;
+	UE_LOG(LogTemp,Log,TEXT("child attach point relative location:%s"),*childAttachPointRelativeLocation.ToString());
+	Child->SetWorldLocation(NewChildLocation);
 }
 

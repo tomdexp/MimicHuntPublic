@@ -26,5 +26,5 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-	static FTransform PlaceChildRelativeToParent(const USceneComponent* Child,const UAttachPoint* ChildAttachPoint,const USceneComponent* Parent, const UAttachPoint* ParentAttachPoint);
+	static void PlaceChildRelativeToParent(USceneComponent* Child,USceneComponent* ChildAttachPoint,const USceneComponent* Parent, const USceneComponent* ParentAttachPoint, bool RotateChild=false);
 };
