@@ -137,6 +137,109 @@ bool AMHLivingBeing::ShouldMove() const
 	return GetCharacterMovement()->GetCurrentAcceleration() != FVector::ZeroVector && GetSpeed() > 3.0f;
 }
 
+ECardinalDirection4 AMHLivingBeing::GetCurrentCardinalDirection4() const
+{
+	FVector ForwardVector = GetActorForwardVector();
+    
+	FVector Velocity = GetVelocity();
+	Velocity.Z = 0.0f;
+
+	if (Velocity.IsNearlyZero())
+	{
+		return ECardinalDirection4::None;
+	}
+
+	Velocity.Normalize();
+
+	float DotProduct = FVector::DotProduct(ForwardVector, Velocity);
+    
+	DotProduct = FMath::Clamp(DotProduct, -1.0f, 1.0f);
+
+	float Angle = FMath::RadiansToDegrees(FMath::Acos(DotProduct));
+
+	if (FVector::DotProduct(GetActorRightVector(), Velocity) < 0.0f)
+	{
+		Angle = 360.0f - Angle;
+	}
+
+	if (Angle >= 45.0f && Angle < 135.0f)
+	{
+		return ECardinalDirection4::Right;
+	}
+	if (Angle >= 135.0f && Angle < 225.0f)
+	{
+		return ECardinalDirection4::Backward;
+	}
+	if (Angle >= 225.0f && Angle < 315.0f)
+	{
+		return ECardinalDirection4::Left;
+	}
+
+	return ECardinalDirection4::Forward;
+}
+
+ECardinalDirection8 AMHLivingBeing::GetCurrentCardinalDirection8() const
+{
+    FVector ForwardVector = GetActorForwardVector();
+    FVector RightVector = GetActorRightVector();
+    
+    FVector Velocity = GetVelocity();
+    Velocity.Z = 0.0f;
+
+    if (Velocity.IsNearlyZero())
+    {
+        return ECardinalDirection8::None;
+    }
+
+    Velocity.Normalize();
+
+    float DotForward = FVector::DotProduct(ForwardVector, Velocity);
+    float DotRight = FVector::DotProduct(RightVector, Velocity);
+    
+    DotForward = FMath::Clamp(DotForward, -1.0f, 1.0f);
+    DotRight = FMath::Clamp(DotRight, -1.0f, 1.0f);
+
+    float Angle = FMath::RadiansToDegrees(FMath::Acos(DotForward));
+
+    if (DotRight < 0.0f)
+    {
+        Angle = 360.0f - Angle;
+    }
+
+    if (Angle >= 22.5f && Angle < 67.5f)
+    {
+        return ECardinalDirection8::ForwardRight;
+    }
+    if (Angle >= 67.5f && Angle < 112.5f)
+    {
+        return ECardinalDirection8::Right;
+    }
+    if (Angle >= 112.5f && Angle < 157.5f)
+    {
+        return ECardinalDirection8::BackwardRight;
+    }
+    if (Angle >= 157.5f && Angle < 202.5f)
+    {
+        return ECardinalDirection8::Backward;
+    }
+    if (Angle >= 202.5f && Angle < 247.5f)
+    {
+        return ECardinalDirection8::BackwardLeft;
+    }
+    if (Angle >= 247.5f && Angle < 292.5f)
+    {
+        return ECardinalDirection8::Left;
+    }
+    if (Angle >= 292.5f && Angle < 337.5f)
+    {
+        return ECardinalDirection8::ForwardLeft;
+    }
+
+    return ECardinalDirection8::Forward;
+}
+
+
+
 UAbilitySystemComponent* AMHLivingBeing::GetAbilitySystemComponent() const
 {
 	return AbilitySystemComponent;

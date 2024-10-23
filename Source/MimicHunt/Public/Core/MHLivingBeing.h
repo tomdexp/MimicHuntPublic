@@ -6,6 +6,32 @@
 #include "GameplayAbilitySystem/AttributeSets/MHAttributeSetLivingBeing.h"
 #include "MHLivingBeing.generated.h"
 
+UENUM(BlueprintType)
+enum class ECardinalDirection8 : uint8
+{
+	None UMETA(DisplayName = "None"),
+	Forward UMETA(DisplayName = "Forward"),
+	ForwardRight UMETA(DisplayName = "Forward Right"),
+	Right UMETA(DisplayName = "Right"),
+	BackwardRight UMETA(DisplayName = "Backward Right"),
+	Backward UMETA(DisplayName = "Backward"),
+	BackwardLeft UMETA(DisplayName = "Backward Left"),
+	Left UMETA(DisplayName = "Left"),
+	ForwardLeft UMETA(DisplayName = "Forward Left")
+};
+
+
+UENUM(BlueprintType)
+enum class ECardinalDirection4 : uint8
+{
+	None,
+	Forward,
+	Right,
+	Backward,
+	Left
+};
+
+
 class UMHAbilitySystemComponent;
 /**
  * This is the base class for all the living beings of the game
@@ -62,6 +88,12 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
 	bool ShouldMove() const; // Used for animations
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	ECardinalDirection4 GetCurrentCardinalDirection4() const; // Used for animations
+
+	UFUNCTION(BlueprintCallable, Category = "LivingBeing")
+	ECardinalDirection8 GetCurrentCardinalDirection8() const; // Used for animations
 	
 	/************************************************************************/
 	/* 						GAMEPLAY ABILITY SYSTEM			                */
