@@ -115,7 +115,7 @@ void UFurnitureJoint::OnMimicWake()
 	{
 		ParentChunkComponent->SetStaticMesh(nullptr);
 	}
-	SetWorldScale3D(FVector::One());
+	SetRelativeScale3D(FVector::One());
 	if(Organ==nullptr) return;
 	USceneComponent* jointStartAttachPoint=this;
 	USceneComponent* jointEndAttachPoint=EndAttachPoint;
@@ -201,7 +201,7 @@ void UFurnitureJoint::OnMimicSleep()
 	{
 		ParentChunkComponent->SetStaticMesh(ParentChunkMesh);
 	}
-	SetWorldScale3D(FVector::Zero());
+	SetRelativeScale3D(FVector::Zero());
 	if(Organ==nullptr) return;
 	if(ChildChunkComponent!=nullptr)
 	{
