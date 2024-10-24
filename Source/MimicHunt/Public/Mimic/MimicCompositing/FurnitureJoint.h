@@ -61,6 +61,8 @@ public:
 	UPROPERTY()
 	USceneComponent* EndAttachPoint=nullptr;
 
+	FVector StartToEndVector=FVector::ZeroVector;
+
 	UPROPERTY()
 	AMimicOrgan* Organ=nullptr;
 };

@@ -23,6 +23,15 @@ UFurnitureJoint::UFurnitureJoint()
 void UFurnitureJoint::BeginPlay()
 {
 	Super::BeginPlay();
+	//You can flip joints to invert the end and start attach point on a whim
+	if(IsFlipped)
+	{
+		auto cache=ChildChunkComponent;
+		ChildChunkComponent=ParentChunkComponent;
+		ParentChunkComponent=cache;
+		EndAttachPoint->AttachToComponent(ChildChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
+		this->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
+	}
 	ParentChunkMesh=ParentChunkComponent->GetStaticMesh();
 	ChildChunkMesh=ChildChunkComponent->GetStaticMesh();
 	Mimic=Cast<AMimic>(GetOwner());
@@ -41,6 +50,20 @@ void UFurnitureJoint::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void UFurnitureJoint::OnMimicBirth()
 {
+	//Compute the start to end direction on mimic birth, because calculating it on wake would make it altered by the shifting around of the wake up of the previous joints
+	if(EndAttachPoint!=nullptr)
+	{
+		USceneComponent* jointStartAttachPoint=this;
+		USceneComponent* jointEndAttachPoint=EndAttachPoint;
+		if(IsFlipped)
+		{
+			jointEndAttachPoint=this;
+			jointStartAttachPoint=EndAttachPoint;
+		}
+	
+		StartToEndVector=jointEndAttachPoint->GetComponentLocation()-jointStartAttachPoint->GetComponentLocation();
+	}
+	
 	if(GetChildActor()!=nullptr)
 	{
 		UClass* clas=GetChildActor()->GetClass();
@@ -90,16 +113,24 @@ void UFurnitureJoint::OnMimicWake()
 	}
 	SetWorldScale3D(FVector::One());
 	if(Organ==nullptr) return;
+	USceneComponent* jointStartAttachPoint=this;
+	USceneComponent* jointEndAttachPoint=EndAttachPoint;
+	if(IsFlipped)
+	{
+		jointEndAttachPoint=this;
+		jointStartAttachPoint=EndAttachPoint;
+	}
 	
 	//Align the angle of the organ with the angle of the joints (regarding the direction of their Start attachment to end attachment vector)
 	FVector organStartToEnd=Organ->EndAttachPoint->GetComponentLocation()-Organ->StartAttachPoint->GetComponentLocation();
-	FVector jointStartToEnd=EndAttachPoint->GetComponentLocation()-this->GetComponentLocation();
-	FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,jointStartToEnd).Rotator();
+	
+	FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,StartToEndVector).Rotator();
 	Organ->GetRootComponent()->SetWorldRotation(lookAtRotation);
 
 	//Place the organ and child component accordingly, making sure their attachment points match
-	UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->StartAttachPoint,ParentChunkComponent,this);
-	UAttachPoint::PlaceChildRelativeToParent(ChildChunkComponent,EndAttachPoint,Organ->GetRootComponent(),Organ->EndAttachPoint);
+	UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->StartAttachPoint,ParentChunkComponent,jointStartAttachPoint);
+	UAttachPoint::PlaceChildRelativeToParent(ChildChunkComponent,jointEndAttachPoint,Organ->GetRootComponent(),Organ->EndAttachPoint);
+	ChildChunkComponent->AttachToComponent(Organ->EndAttachPoint,FAttachmentTransformRules::KeepWorldTransform);
 
 	//If the organ is physicked, we start the physicking
 	if(!Organ->IsPhysicked || Organ->PhysickedComponent==nullptr)
@@ -124,7 +155,7 @@ void UFurnitureJoint::OnMimicWake()
 	//Create the physic joint between joint's parent chunk and the organ
 	UPhysicsConstraintComponent* StartConstraintComp = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
 	StartConstraintComp->ConstraintInstance = ConstraintInstance;
-	StartConstraintComp->SetWorldLocation(this->GetComponentLocation());
+	StartConstraintComp->SetWorldLocation(jointStartAttachPoint->GetComponentLocation());
 	StartConstraintComp->AttachToComponent(ParentChunkComponent, FAttachmentTransformRules::KeepWorldTransform);
 	StartConstraintComp->SetConstrainedComponents(ParentChunkComponent,NAME_None,Organ->PhysickedComponent,NAME_None);
 
