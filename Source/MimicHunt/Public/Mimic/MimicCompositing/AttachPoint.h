@@ -6,6 +6,13 @@
 #include "Components/SceneComponent.h"
 #include "AttachPoint.generated.h"
 
+UENUM(BlueprintType)
+enum class EAttachPointType : uint8
+{
+	Start,
+	End,
+	Single
+};
 
 //Used to connect organs to chunks, chunks to chunks etc. When you connect 2 of these elements, two of their attach point should touch
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -18,7 +25,7 @@ public:
 	UAttachPoint();
 	//Is the start attachment point
 	UPROPERTY(EditAnywhere,BlueprintReadWrite)
-	bool IsStart=false;
+	EAttachPointType AttachPointType=EAttachPointType::Single;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;

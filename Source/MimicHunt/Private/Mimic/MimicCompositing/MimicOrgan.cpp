@@ -28,7 +28,14 @@ void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent
 	for (UActorComponent* attachPointActorComponent : attachPointsActorComponents)
 	{
 		auto attachPoint = Cast<UAttachPoint>(attachPointActorComponent);
-		if (attachPoint->IsStart)
+		if (attachPoint->AttachPointType==EAttachPointType::Single)
+		{
+			SingleAttachPoint = attachPoint;
+			IsSingle = true;
+			continue;
+		}
+		IsSingle=false;
+		if (attachPoint->AttachPointType==EAttachPointType::Start)
 		{
 			StartAttachPoint = attachPoint;
 			continue;

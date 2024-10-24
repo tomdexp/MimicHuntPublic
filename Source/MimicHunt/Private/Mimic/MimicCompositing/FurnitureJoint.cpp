@@ -98,7 +98,10 @@ void UFurnitureJoint::OnMimicBirth()
 	Organ=Cast<AMimicOrgan>(GetChildActor());
 	Organ->Initialize(Mimic,this);
 	Organ->OnMimicBirth();
-	_childChunkCachedRelativeTransform=ChildChunkComponent->GetRelativeTransform();
+	if(ChildChunkComponent!=nullptr)
+	{
+		_childChunkCachedRelativeTransform=ChildChunkComponent->GetRelativeTransform();
+	}
 	OnMimicSleep();
 }
 
@@ -121,17 +124,26 @@ void UFurnitureJoint::OnMimicWake()
 		jointEndAttachPoint=this;
 		jointStartAttachPoint=EndAttachPoint;
 	}
-	
-	//Align the angle of the organ with the angle of the joints (regarding the direction of their Start attachment to end attachment vector)
-	FVector organStartToEnd=Organ->EndAttachPoint->GetComponentLocation()-Organ->StartAttachPoint->GetComponentLocation();
-	
-	FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,StartToEndVector).Rotator();
-	Organ->GetRootComponent()->SetWorldRotation(lookAtRotation);
 
-	//Place the organ and child component accordingly, making sure their attachment points match
-	UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->StartAttachPoint,ParentChunkComponent,jointStartAttachPoint);
-	UAttachPoint::PlaceChildRelativeToParent(ChildChunkComponent,jointEndAttachPoint,Organ->GetRootComponent(),Organ->EndAttachPoint);
-	ChildChunkComponent->AttachToComponent(Organ->EndAttachPoint,FAttachmentTransformRules::KeepWorldTransform);
+	//Place everything accordingly depending on type of organ
+	if(Organ->IsSingle)
+	{
+		//Place the organ and child component accordingly, making sure their attachment points match
+		UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->SingleAttachPoint,ParentChunkComponent,jointStartAttachPoint);
+	}else
+	{
+		//Align the angle of the organ with the angle of the joints (regarding the direction of their Start attachment to end attachment vector)
+		FVector organStartToEnd=Organ->EndAttachPoint->GetComponentLocation()-Organ->StartAttachPoint->GetComponentLocation();
+	
+		FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,StartToEndVector).Rotator();
+		Organ->GetRootComponent()->SetWorldRotation(lookAtRotation);
+		
+		//Place the organ and child component accordingly, making sure their attachment points match
+		UAttachPoint::PlaceChildRelativeToParent(Organ->GetRootComponent(),Organ->StartAttachPoint,ParentChunkComponent,jointStartAttachPoint);
+		UAttachPoint::PlaceChildRelativeToParent(ChildChunkComponent,jointEndAttachPoint,Organ->GetRootComponent(),Organ->EndAttachPoint);
+		ChildChunkComponent->AttachToComponent(Organ->EndAttachPoint,FAttachmentTransformRules::KeepWorldTransform);
+	}
+	
 
 	//If the organ is physicked, we start the physicking
 	if(!Organ->IsPhysicked || Organ->PhysickedComponent==nullptr)
@@ -160,7 +172,7 @@ void UFurnitureJoint::OnMimicWake()
 	StartConstraintComp->AttachToComponent(ParentChunkComponent, FAttachmentTransformRules::KeepWorldTransform);
 	StartConstraintComp->SetConstrainedComponents(ParentChunkComponent,NAME_None,Organ->PhysickedComponent,NAME_None);
 
-	if(ChildChunkComponent==nullptr || !Organ->MakeChildChunkPhysicked)
+	if(ChildChunkComponent==nullptr || !Organ->MakeChildChunkPhysicked || Organ->IsSingle)
 	{
 		Organ->OnMimicWake();
 		return;
@@ -191,6 +203,9 @@ void UFurnitureJoint::OnMimicSleep()
 	}
 	SetWorldScale3D(FVector::Zero());
 	if(Organ==nullptr) return;
-	ChildChunkComponent->SetRelativeTransform(_childChunkCachedRelativeTransform);
+	if(ChildChunkComponent!=nullptr)
+	{
+		ChildChunkComponent->SetRelativeTransform(_childChunkCachedRelativeTransform);
+	}
 	Organ->OnMimicSleep();
 }
