@@ -33,7 +33,8 @@ void UFurnitureJoint::BeginPlay()
 		this->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
 	}
 	ParentChunkMesh=ParentChunkComponent->GetStaticMesh();
-	ChildChunkMesh=ChildChunkComponent->GetStaticMesh();
+	if(ChildChunkComponent!=nullptr)
+		ChildChunkMesh=ChildChunkComponent->GetStaticMesh();
 	Mimic=Cast<AMimic>(GetOwner());
 	OnMimicBirth();
 	Mimic->OnMimicWakeDelegate.AddUObject(this,&UFurnitureJoint::OnMimicWake);

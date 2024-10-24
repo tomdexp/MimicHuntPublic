@@ -213,8 +213,6 @@ void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blu
 		auto staticMeshComponent = Cast<UStaticMeshComponent>(subobjectData->GetObject());
 		UFurnitureJoint* furnitureJoint = NewObject<UFurnitureJoint>();
 		furnitureJoint->CreationMethod = EComponentCreationMethod::UserConstructionScript;
-		furnitureJoint->ParentChunkName=parentHandle.GetData()->GetAssetName().ToString();
-		furnitureJoint->ChildChunkName=complementaryBeaconParentHandle.GetData()->GetAssetName().ToString();
 		furnitureJoint->SetMobility(EComponentMobility::Movable);
 		furnitureJoint->SetRelativeTransform(staticMeshComponent->GetRelativeTransform());
 		furnitureJoint->EndAttachPointName=complementaryBeaconComponentName;

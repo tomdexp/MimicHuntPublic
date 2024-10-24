@@ -62,27 +62,14 @@ void AMimic::OnConstruction(const FTransform& Transform)
 	 	
 		if(component->GetClass()!=UFurnitureJoint::StaticClass()) continue;
 		auto jointComponent=Cast<UFurnitureJoint>(component);
-
-		if(!staticMeshMapByName.Contains(jointComponent->ParentChunkName))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Parent chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
-				, *component->GetName(), *jointComponent->ParentChunkName);
-			continue;
-		}
-		jointComponent->ParentChunkComponent=staticMeshMapByName[jointComponent->ParentChunkName];
-	 	
-		if(!staticMeshMapByName.Contains(jointComponent->ChildChunkName))
-		{
-			UE_LOG(LogTemp, Error, TEXT("Child chunk of %s, with name %s doesn't exist. Have you renamed it recently ? You should not do that")
-				, *component->GetName(), *jointComponent->ChildChunkName);
-			continue;
-		}
-		jointComponent->ChildChunkComponent=staticMeshMapByName[jointComponent->ChildChunkName];
+		jointComponent->Mimic=this;
 		if(attachmentsMapByName.Contains(jointComponent->EndAttachPointName))
 		{
 			jointComponent->EndAttachPoint=attachmentsMapByName[jointComponent->EndAttachPointName];
 		}
-		jointComponent->Mimic=this;
+		jointComponent->ParentChunkComponent=Cast<UStaticMeshComponent>(jointComponent->GetAttachParent());
+		if(jointComponent->EndAttachPoint==nullptr) continue;
+		jointComponent->ChildChunkComponent=Cast<UStaticMeshComponent>(jointComponent->EndAttachPoint->GetAttachParent());
 	}
 }
 

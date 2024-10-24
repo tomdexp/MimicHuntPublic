@@ -59,11 +59,13 @@ void AMimicOrgan::OnMimicBirth()
 
 void AMimicOrgan::OnMimicWake()
 {
+	IsAwake=true;
 	OnMimicWakeEvent();
 }
 
 void AMimicOrgan::OnMimicSleep()
 {
+	IsAwake=false;
 	OnMimicSleepEvent();
 }
 

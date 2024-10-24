@@ -62,4 +62,6 @@ public:
 	USceneComponent* EndAttachPoint=nullptr;
 	UPROPERTY()
 	UStaticMeshComponent* PhysickedComponent=nullptr;
+	UPROPERTY(BlueprintReadOnly)
+	bool IsAwake=false;
 };
