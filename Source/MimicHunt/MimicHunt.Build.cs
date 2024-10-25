@@ -29,7 +29,9 @@ public class MimicHunt : ModuleRules
 			"UMG",
 			"UnrealEd",
 			"EditorSubsystem",
-			"SubobjectDataInterface"
-		});
+			"SubobjectDataInterface",
+			"Odin",
+            "OdinLibrary"
+        });
 	}
 }
