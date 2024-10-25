@@ -31,7 +31,8 @@ public class MimicHunt : ModuleRules
 			"EditorSubsystem",
 			"SubobjectDataInterface",
 			"Odin",
-            "OdinLibrary"
+            "OdinLibrary",
+            "AkAudio"
         });
 	}
 }
