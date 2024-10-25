@@ -3,6 +3,7 @@
 #include "AbilitySystemComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Core/MHGameInstance.h"
 #include "Core/MHPlayerState.h"
 #include "Data/MHPlayerData.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -40,6 +41,9 @@ AMHPlayerCharacter::AMHPlayerCharacter()
 	// FirstPersonMeshComponent->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	FirstPersonMeshComponent->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
+	AkOdinInputComponent = CreateDefaultSubobject<UAkOdinInputComponent>(TEXT("AkOdinInputComponent"));
+	
+
 	// Hide the main mesh in the 1st person view
 	GetMesh()->SetOwnerNoSee(true);
 	
@@ -64,6 +68,12 @@ void AMHPlayerCharacter::BeginPlay()
 		GetCharacterMovement()->MaxWalkSpeedCrouched = PlayerData->CrouchSpeed;
 		// Set the player jump velocity
 		GetCharacterMovement()->JumpZVelocity = PlayerData->JumpVelocity;
+	}
+
+	if (HasAuthority())
+	{
+		OdinID = FGuid::NewGuid(); // This is replicated
+		OnRep_OdinID();
 	}
 }
 
@@ -90,6 +100,7 @@ void AMHPlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHPlayerCharacter, bIsSprinting);
 	DOREPLIFETIME(AMHPlayerCharacter, ReplicatedCameraRotation);
+	DOREPLIFETIME(AMHPlayerCharacter, OdinID);
 }
 
 void AMHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -317,11 +328,25 @@ FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentIn
 
 FVector AMHPlayerCharacter::GetLookAtTarget() const
 {
-	// TODO : Replicate this
-
 	FVector Start = FirstPersonCameraComponent->GetComponentLocation();
 	FVector ForwardVector = FirstPersonCameraComponent->GetForwardVector();
 	FVector End = Start + (ForwardVector * 100.0f); // 1 meter in front
 
 	return End;
+}
+
+void AMHPlayerCharacter::OnRep_OdinID()
+{
+	LL_DBG(this, "AMHPlayerCharacter::OnRep_OdinID is {0}", OdinID);
+	OnOdinIDChanged.Broadcast(OdinID);
+	// Get the GameInstance
+	if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
+	{
+		GameInstance->IdsToPlayerCharacters.Add(OdinID, this);
+	}
+	if (IsLocallyControlled())
+	{
+		LL_DBG(this, "AMHPlayerCharacter::OnRep_OdinID is ready to init OdinID");
+		OnReadyToInitOdinID.Broadcast(OdinID);
+	}
 }
