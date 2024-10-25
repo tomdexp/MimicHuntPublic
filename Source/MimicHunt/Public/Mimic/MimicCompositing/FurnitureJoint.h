@@ -6,6 +6,7 @@
 #include "OrganBundle.h"
 #include "Components/SceneComponent.h"
 #include "Mimic/Mimic.h"
+#include "PhysicsEngine/PhysicsConstraintComponent.h"
 #include "FurnitureJoint.generated.h"
 
 //This class represent the joint between two parts of a furniture piece, where you can add mimic eyes, legs etc.
@@ -22,6 +23,9 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	FTransform _childChunkCachedRelativeTransform;
+	USceneComponent* _childChunkCachedParent;
+	UPhysicsConstraintComponent* _startConstraintComponent;
+	UPhysicsConstraintComponent* _endConstraintComponent;
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,

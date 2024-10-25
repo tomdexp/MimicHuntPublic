@@ -6,7 +6,6 @@
 #include "Mimic/MimicCompositing/AttachPoint.h"
 #include "Mimic/MimicCompositing/MimicOrgan.h"
 #include "Mimic/MimicCompositing/OrganBundle.h"
-#include "PhysicsEngine/PhysicsConstraintActor.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
 
 // Sets default values for this component's properties
@@ -101,6 +100,7 @@ void UFurnitureJoint::OnMimicBirth()
 	if(ChildChunkComponent!=nullptr)
 	{
 		_childChunkCachedRelativeTransform=ChildChunkComponent->GetRelativeTransform();
+		_childChunkCachedParent=ChildChunkComponent->GetAttachParent();
 	}
 	OnMimicSleep();
 }
@@ -166,11 +166,15 @@ void UFurnitureJoint::OnMimicWake()
 	ConstraintInstance.SetSoftTwistLimitParams(true,Organ->Stiffness,Organ->Damping,0,0);
 
 	//Create the physic joint between joint's parent chunk and the organ
-	UPhysicsConstraintComponent* StartConstraintComp = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
-	StartConstraintComp->ConstraintInstance = ConstraintInstance;
-	StartConstraintComp->SetWorldLocation(jointStartAttachPoint->GetComponentLocation());
-	StartConstraintComp->AttachToComponent(ParentChunkComponent, FAttachmentTransformRules::KeepWorldTransform);
-	StartConstraintComp->SetConstrainedComponents(ParentChunkComponent,NAME_None,Organ->PhysickedComponent,NAME_None);
+	if(_startConstraintComponent==nullptr)
+	{
+		_startConstraintComponent = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
+	}
+	
+	_startConstraintComponent->ConstraintInstance = ConstraintInstance;
+	_startConstraintComponent->SetWorldLocation(jointStartAttachPoint->GetComponentLocation());
+	_startConstraintComponent->AttachToComponent(ParentChunkComponent, FAttachmentTransformRules::KeepWorldTransform);
+	_startConstraintComponent->SetConstrainedComponents(ParentChunkComponent,NAME_None,Organ->PhysickedComponent,NAME_None);
 
 	if(ChildChunkComponent==nullptr || !Organ->MakeChildChunkPhysicked || Organ->IsSingle)
 	{
@@ -179,12 +183,15 @@ void UFurnitureJoint::OnMimicWake()
 	}
 
 	//Create the physic joint between the organ and the joint's child chunk
-	ConstraintInstance.SetDisableCollision(true);
-	UPhysicsConstraintComponent* EndConstraintComp = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
-	EndConstraintComp->ConstraintInstance = ConstraintInstance;
-	EndConstraintComp->SetWorldLocation(Organ->EndAttachPoint->GetComponentLocation());
-	EndConstraintComp->AttachToComponent(Organ->PhysickedComponent, FAttachmentTransformRules::KeepWorldTransform);
-	EndConstraintComp->SetConstrainedComponents(Organ->PhysickedComponent,NAME_None,ChildChunkComponent,NAME_None);
+	if(_endConstraintComponent==nullptr)
+	{
+		_endConstraintComponent = NewObject<UPhysicsConstraintComponent>(ParentChunkComponent);
+	}
+	_endConstraintComponent->ConstraintInstance = ConstraintInstance;
+	_endConstraintComponent->SetWorldLocation(Organ->EndAttachPoint->GetComponentLocation());
+	_endConstraintComponent->AttachToComponent(Organ->PhysickedComponent, FAttachmentTransformRules::KeepWorldTransform);
+	_endConstraintComponent->SetConstrainedComponents(Organ->PhysickedComponent,NAME_None,ChildChunkComponent,NAME_None);
+	
 	Organ->PhysickedComponent->SetSimulatePhysics(true);
 	ChildChunkComponent->SetSimulatePhysics(true);
 	
@@ -201,11 +208,36 @@ void UFurnitureJoint::OnMimicSleep()
 	{
 		ParentChunkComponent->SetStaticMesh(ParentChunkMesh);
 	}
-	SetRelativeScale3D(FVector::Zero());
-	if(Organ==nullptr) return;
+	
+	if(Organ==nullptr)
+	{
+		SetRelativeScale3D(FVector::Zero());
+		return;
+	}
+	
+	if(_startConstraintComponent!=nullptr)
+	{
+		_startConstraintComponent->DestroyComponent();
+	}
+	if(_endConstraintComponent!=nullptr)
+	{
+		_endConstraintComponent->DestroyComponent();
+	}
+
+	if(Organ->IsPhysicked && Organ->PhysickedComponent!=nullptr)
+	{
+		Organ->AttachToComponent(this,FAttachmentTransformRules::SnapToTargetIncludingScale);
+		Organ->PhysickedComponent->AttachToComponent(Organ->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
+		Organ->PhysickedComponent->SetSimulatePhysics(false);
+	}
+	
 	if(ChildChunkComponent!=nullptr)
 	{
+		ChildChunkComponent->AttachToComponent(_childChunkCachedParent, FAttachmentTransformRules::KeepWorldTransform);
 		ChildChunkComponent->SetRelativeTransform(_childChunkCachedRelativeTransform);
+		ChildChunkComponent->SetSimulatePhysics(false);
 	}
+
+	SetRelativeScale3D(FVector::Zero());
 	Organ->OnMimicSleep();
 }
