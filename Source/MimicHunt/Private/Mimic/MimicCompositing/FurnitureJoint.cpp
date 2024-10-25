@@ -182,6 +182,8 @@ void UFurnitureJoint::OnMimicWake()
 		return;
 	}
 
+	UE_LOG(LogTemp, Log, TEXT("Attached to %s of %s"),*Organ->PhysickedComponent->GetAttachParent()->GetName(),*Organ->PhysickedComponent->GetAttachParentActor()->GetName())
+
 	//Create the physic joint between the organ and the joint's child chunk
 	if(_endConstraintComponent==nullptr)
 	{
@@ -218,17 +220,20 @@ void UFurnitureJoint::OnMimicSleep()
 	if(_startConstraintComponent!=nullptr)
 	{
 		_startConstraintComponent->DestroyComponent();
+		_startConstraintComponent=nullptr;
 	}
 	if(_endConstraintComponent!=nullptr)
 	{
 		_endConstraintComponent->DestroyComponent();
+		_endConstraintComponent=nullptr;
 	}
 
 	if(Organ->IsPhysicked && Organ->PhysickedComponent!=nullptr)
 	{
+		Organ->PhysickedComponent->SetSimulatePhysics(false);
 		Organ->AttachToComponent(this,FAttachmentTransformRules::SnapToTargetIncludingScale);
 		Organ->PhysickedComponent->AttachToComponent(Organ->GetRootComponent(),FAttachmentTransformRules::KeepWorldTransform);
-		Organ->PhysickedComponent->SetSimulatePhysics(false);
+		
 	}
 	
 	if(ChildChunkComponent!=nullptr)
