@@ -15,4 +15,9 @@ class MIMICHUNT_API AMHGameMode : public AGameModeBase
 public:
 	AMHGameMode();
 	virtual void GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>& ActorList) override;
+	virtual void InitGameState() override;
+
+	
+	UPROPERTY(Transient)
+	TObjectPtr<class APersistentDataManager> PersistentDataManager;
 };

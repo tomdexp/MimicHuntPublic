@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "PersistentDataManager.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "MHNetworkBlueprintLibrary.generated.h"
 
@@ -11,4 +12,7 @@ class MIMICHUNT_API UMHNetworkBlueprintLibrary : public UBlueprintFunctionLibrar
 
 	UFUNCTION(BlueprintCallable)
 	static void ServerTravelToLevel(const UObject* WorldContextObject, const FString& LevelName);
+
+	UFUNCTION(BlueprintCallable)
+	static APersistentDataManager* GetPersistentDataManager(const UObject* WorldContextObject, const AGameStateBase* GameState);
 };

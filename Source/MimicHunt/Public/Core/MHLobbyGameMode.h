@@ -11,4 +11,6 @@ UCLASS()
 class MIMICHUNT_API AMHLobbyGameMode : public AMHGameMode
 {
 	GENERATED_BODY()
+public:
+	virtual void PreInitializeComponents() override;
 };

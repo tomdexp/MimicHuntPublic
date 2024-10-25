@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
+#include "Networking/PersistentDataManager.h"
 #include "MHGameState.generated.h"
 
 UENUM(BlueprintType)
@@ -39,6 +40,9 @@ public:
 
 	UPROPERTY(BlueprintAssignable, Category = "Online")
 	FOnAnyPlayerReadyInLobbyChanged OnAnyPlayerReadyInLobbyChanged;
+
+	UPROPERTY(Transient)
+	TObjectPtr<APersistentDataManager> PersistentDataManager;
 
 	UFUNCTION()
 	void AnyPlayerReadyInLobbyChanged(bool bNewIsReadyInLobby);
