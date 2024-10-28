@@ -24,7 +24,7 @@ FString BoolToString(bool value)
 //Will remove the ballising parts of the static meshs of the Mimic FBX and keep the part that says what chunk of the furniture the solid mesh is connected to
 FString ExtractLinkedFurnitureChunkPart(const FString& Input)
 {
-	FRegexPattern Pattern(TEXT("(?:MIMIC_[0-9]*_(?:END)_|(?:START)_)(.*)"));
+	FRegexPattern Pattern(TEXT("(?:MIMIC_[0-9]*[_]*(?:END)_|(?:START)_)(.*)"));
 	FRegexMatcher Matcher(Pattern, Input);
 
 	if (Matcher.FindNext())
@@ -38,7 +38,7 @@ FString ExtractLinkedFurnitureChunkPart(const FString& Input)
 //If you feed it MIMIC_1_END_Chair_Top_R, it will give back MIMIC_1_START_Chair_Top_R and vice versa
 FString FindComplementaryBeacon(const FString& Input)
 {
-	FRegexPattern Pattern(TEXT("(MIMIC_[0-9]*_)(END|START)(.*)"));
+	FRegexPattern Pattern(TEXT("(MIMIC_[0-9]*[_]*)(END|START)(.*)"));
 	FRegexMatcher Matcher(Pattern, Input);
 
 	if (Matcher.FindNext())
@@ -56,7 +56,7 @@ FString FindComplementaryBeacon(const FString& Input)
 //Returns true if the beacon's name submitted is one of a start beacon
 bool IsStartBeacon(const FString& Input)
 {
-	FRegexPattern Pattern(TEXT("(?:MIMIC_[0-9]*_)(END|START)(?:.*)"));
+	FRegexPattern Pattern(TEXT("(?:MIMIC_[0-9]*[_]*)(END|START)(?:.*)"));
 	FRegexMatcher Matcher(Pattern, Input);
 
 	if (Matcher.FindNext())
@@ -168,7 +168,8 @@ void UMimicEditorBlueprintFunctionLibrary::ComputeMimicBlueprint(UBlueprint* Blu
 		
 		FString componentName = subobjectData->GetAssetName().ToString();
 		if (componentName.Left(5) != "MIMIC")continue;
-		
+
+		UE_LOG(LogTemp,Log, TEXT("Treating beacon %s"),*componentName);
 		beaconsHandles.Add(subobjectDataHandle);
 		//We don't want to deal with end beacons first
 		if (!IsStartBeacon(componentName)) continue;
