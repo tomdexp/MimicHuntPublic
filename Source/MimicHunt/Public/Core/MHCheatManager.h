@@ -31,6 +31,15 @@ public:
 	UFUNCTION(Exec)
 	void GetLobbyMoney();
 
+	UFUNCTION(Exec)
+	void BirthMimic();
+
+	UFUNCTION(Exec)
+	void WakeMimic();
+
+	UFUNCTION(Exec)
+	void SleepMimic();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CheatManager")
 	TSubclassOf<AActor> PlayerCharacterClass;
 

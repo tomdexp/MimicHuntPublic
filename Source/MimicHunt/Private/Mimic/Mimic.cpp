@@ -18,8 +18,7 @@ AMimic::AMimic()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-	SetReplicates(true);
-	SetReplicateMovement(true);
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned
@@ -83,7 +82,7 @@ void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 	// Here we list the variables we want to replicate
 	DOREPLIFETIME(AMimic, ChosenOrgans);
-	DOREPLIFETIME(AMimic, TestRep);
+	DOREPLIFETIME(AMimic, IsAwake);
 }
 
 void AMimic::MimicBirth()
@@ -91,16 +90,21 @@ void AMimic::MimicBirth()
 	OnMimicBirthDelegate.Broadcast();
 	if(!HasAuthority()) return;
 	ChosenOrgans=TempChosenOrgans;
+	MimicSleep();
 }
 
 void AMimic::MimicWake()
 {
 	OnMimicWakeDelegate.Broadcast();
+	if(!HasAuthority()) return;
+	IsAwake=true;
 }
 
 void AMimic::MimicSleep()
 {
 	OnMimicSleepDelegate.Broadcast();
+	if(!HasAuthority()) return;
+	IsAwake=false;
 }
 
 void AMimic::OnRep_ChosenOrgans()
@@ -109,9 +113,12 @@ void AMimic::OnRep_ChosenOrgans()
 	OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
 }
 
-void AMimic::OnRep_Test()
+	void AMimic::OnRep_IsAwake()
 {
-	UE_LOG(LogTemp, Log, TEXT("TestRep Replicated"))
+	if(IsAwake)
+		MimicWake();
+	else
+		MimicSleep();
 }
 
 // Called every frame

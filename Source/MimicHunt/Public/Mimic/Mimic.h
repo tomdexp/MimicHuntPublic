@@ -41,26 +41,27 @@ class MIMICHUNT_API AMimic : public AActor
 public:
 	// Sets default values for this actor's properties
 	AMimic();
-protected:
-	// Called when the game starts or when spawned
-	virtual void BeginPlay() override;
-	virtual void OnConstruction(const FTransform& Transform) override;
 	UFUNCTION(BlueprintCallable,Category="Mimic")
 	void MimicBirth();
 	UFUNCTION(BlueprintCallable,Category="Mimic")
 	void MimicWake();
 	UFUNCTION(BlueprintCallable,Category="Mimic")
 	void MimicSleep();
+protected:
+	// Called when the game starts or when spawned
+	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 	UFUNCTION()
 	void OnRep_ChosenOrgans();
-	UFUNCTION()
-	void OnRep_Test();
-	UPROPERTY(Replicated, ReplicatedUsing=OnRep_ChosenOrgans)
+	UPROPERTY(ReplicatedUsing=OnRep_ChosenOrgans)
 	FChosenOrgansList ChosenOrgans;
-	UPROPERTY(Replicated, ReplicatedUsing=OnRep_Test)
-	int TestRep;
 	//TempChosenOrgans isn't replicated, when the time is right, we copy it to chosen organs and it gets replicated
 	FChosenOrgansList TempChosenOrgans;
+
+	UFUNCTION()
+	void OnRep_IsAwake();
+	UPROPERTY(ReplicatedUsing=OnRep_IsAwake)
+	bool IsAwake;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

@@ -9,6 +9,7 @@ AFurniture::AFurniture()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	bReplicates=true;
 }
 
 // Called when the game starts or when spawned
@@ -26,6 +27,7 @@ void AFurniture::Tick(float DeltaTime)
 
 void AFurniture::TurnToMimic()
 {
+	if(!HasAuthority()) return;
 	UBlueprintGeneratedClass* BlueprintClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
 	FTransform SpawnTransform = this->GetActorTransform();
 	UWorld* World = this->GetWorld();
