@@ -54,8 +54,6 @@ AMHPlayerCharacter::AMHPlayerCharacter()
 
 void AMHPlayerCharacter::BeginPlay()
 {
-	Super::BeginPlay();
-	
 	// Bind the player data to the character
 	if (!PlayerData->IsValidLowLevel())
 	{
@@ -76,6 +74,8 @@ void AMHPlayerCharacter::BeginPlay()
 		OdinID = FGuid::NewGuid(); // This is replicated
 		OnRep_OdinID();
 	}
+
+	Super::BeginPlay();
 }
 
 void AMHPlayerCharacter::Tick(float DeltaSeconds)
@@ -144,6 +144,12 @@ void AMHPlayerCharacter::PossessedBy(AController* NewController)
 		AddStartupEffects();
 
 		AddCharacterAbilities();
+
+		if (IsLocallyControlled())
+		{
+			OnReadyToInitOdin_BP();
+			LL_DBG(this, "AMHPlayerCharacter::PossessedBy : OnReadyToInitOdin_BP", OdinID);
+		}
 	}
 }
 
@@ -162,6 +168,12 @@ void AMHPlayerCharacter::OnRep_PlayerState()
 
 		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
+
+		if(IsLocallyControlled())
+		{
+			OnReadyToInitOdin_BP();
+			LL_DBG(this, "AMHPlayerCharacter::OnRep_PlayerState : OnReadyToInitOdin_BP", OdinID);
+		}
 	}
 }
 
@@ -358,11 +370,6 @@ void AMHPlayerCharacter::OnRep_OdinID()
 	{
 		GameInstance->IdsToPlayerCharacters.Add(OdinID, this);
 	}
-	if (IsLocallyControlled())
-	{
-		LL_DBG(this, "AMHPlayerCharacter::OnRep_OdinID is ready to init OdinID");
-		OnReadyToInitOdinID.Broadcast(OdinID);
-	}
 }
 
 FVoidCoroutine AMHPlayerCharacter::WaitForOdinID(FLatentActionInfo LatentInfo)
@@ -372,4 +379,8 @@ FVoidCoroutine AMHPlayerCharacter::WaitForOdinID(FLatentActionInfo LatentInfo)
 		co_await UE5Coro::Latent::NextTick();
 	}
 	co_return;
+}
+
+void AMHPlayerCharacter::OnReadyToInitOdin_BP_Implementation()
+{
 }

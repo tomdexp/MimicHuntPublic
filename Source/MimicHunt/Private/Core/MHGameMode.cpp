@@ -71,6 +71,11 @@ void AMHGameMode::PlayerCharacterDied(AController* Controller)
 	}
 }
 
+bool AMHGameMode::AllowCheats(APlayerController* P)
+{
+	return true;
+}
+
 void AMHGameMode::RespawnPlayerCharacter(AController* Controller)
 {
 	if (Controller->IsPlayerController())
