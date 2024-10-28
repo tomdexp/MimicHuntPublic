@@ -20,10 +20,10 @@ void AMimicOrgan::BeginPlay()
 	Super::BeginPlay();
 }
 
-void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent)
+void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent, int randomSeed)
 {
-	_mimic = mimic;
-	_ownerComponent = ownerComponent;
+	Mimic = mimic;
+	OwnerComponent = ownerComponent;
 	TArray<UActorComponent*> attachPointsActorComponents = K2_GetComponentsByClass(UAttachPoint::StaticClass());
 	for (UActorComponent* attachPointActorComponent : attachPointsActorComponents)
 	{
@@ -57,6 +57,7 @@ void AMimicOrgan::Initialize(AMimic* mimic, UChildActorComponent* ownerComponent
 		       *PhysickedComponentName, *GetName()
 		       );
 	}
+	RandomStream=FRandomStream(randomSeed);
 }
 
 void AMimicOrgan::OnMimicBirth()

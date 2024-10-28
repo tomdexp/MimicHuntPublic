@@ -26,13 +26,16 @@ protected:
 	USceneComponent* _childChunkCachedParent;
 	UPhysicsConstraintComponent* _startConstraintComponent;
 	UPhysicsConstraintComponent* _endConstraintComponent;
+	int RandomSeed;
 public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;
-	void OnMimicBirth();
+	void ChooseRandomOrgan();
+	void InitializeJoint();
 	void OnMimicWake();
 	void OnMimicSleep();
+	void OnMimicChoseOrgans(const FChosenOrgansList& chosenOrgansList);
 
 	UPROPERTY(BlueprintReadOnly)
 	AMimic* Mimic;
@@ -63,4 +66,6 @@ public:
 
 	UPROPERTY()
 	AMimicOrgan* Organ=nullptr;
+	UPROPERTY()
+	UBlueprintGeneratedClass* ChosenRandomOrgan=nullptr;
 };
