@@ -4,6 +4,7 @@
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Core/MHGameInstance.h"
+#include "Core/MHGameMode.h"
 #include "Core/MHPlayerState.h"
 #include "Data/MHPlayerData.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -162,6 +163,19 @@ void AMHPlayerCharacter::OnRep_PlayerState()
 		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
 	}
+}
+
+void AMHPlayerCharacter::FinishDying()
+{
+	if (HasAuthority())
+	{
+		if (AMHGameMode* GameMode = Cast<AMHGameMode>(GetWorld()->GetAuthGameMode()))
+		{
+			GameMode->PlayerCharacterDied(GetController());
+		}
+	}
+
+	Super::FinishDying();
 }
 
 void AMHPlayerCharacter::UpdateMovementSpeed()

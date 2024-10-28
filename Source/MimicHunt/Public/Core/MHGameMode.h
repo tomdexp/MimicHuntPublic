@@ -4,6 +4,7 @@
 #include "GameFramework/GameModeBase.h"
 #include "MHGameMode.generated.h"
 
+class AMHPlayerCharacter;
 /**
  * This is the GameMode inherited by all the GameMode of the game
  * WARNING : IT EXIST ONLY THE SERVER
@@ -16,8 +17,12 @@ public:
 	AMHGameMode();
 	virtual void GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>& ActorList) override;
 	virtual void InitGameState() override;
-
+	virtual void RespawnPlayerCharacter(AController* Controller);
+	virtual void PlayerCharacterDied(AController* Controller);
 	
 	UPROPERTY(Transient)
 	TObjectPtr<class APersistentDataManager> PersistentDataManager;
+
+	UPROPERTY(EditDefaultsOnly)
+	TSubclassOf<AMHPlayerCharacter> PlayerCharacterClass;
 };

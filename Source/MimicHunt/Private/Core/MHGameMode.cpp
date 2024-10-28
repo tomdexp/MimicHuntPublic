@@ -1,7 +1,10 @@
 #include "Core/MHGameMode.h"
 
 #include "EngineUtils.h"
+#include "MHPlayerCharacter.h"
 #include "Core/MHGameState.h"
+#include "Core/MHPlayerController.h"
+#include "GameFramework/SpectatorPawn.h"
 #include "Utils/LLog.h"
 #include "Networking/PersistentDataManager.h"
 
@@ -44,4 +47,58 @@ void AMHGameMode::InitGameState()
 		return;
 	}
 	LL_DBG(this, "AMHGameMode::InitGameState : PersistentDataManager was not found (maybe it not spawned yet which is normal then)");
+}
+
+void AMHGameMode::PlayerCharacterDied(AController* Controller)
+{
+	FActorSpawnParameters SpawnParameters;
+	SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+	ASpectatorPawn* SpectatorPawn = GetWorld()->SpawnActor<ASpectatorPawn>(SpectatorClass, Controller->GetPawn()->GetActorTransform(), SpawnParameters);
+
+	Controller->UnPossess();
+	Controller->Possess(SpectatorPawn);
+
+	FTimerHandle RespawnTimerHandle;
+
+	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &AMHGameMode::RespawnPlayerCharacter,Controller);
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, 5, false);
+
+	AMHPlayerController* PC = Cast<AMHPlayerController>(Controller);
+	if (PC)
+	{
+		// TODO : Set UI Callback here
+		//PC->SetRespawnCountdown(RespawnDelay);
+	}
+}
+
+void AMHGameMode::RespawnPlayerCharacter(AController* Controller)
+{
+	if (Controller->IsPlayerController())
+	{
+		// Respawn player
+		AActor* PlayerStart = FindPlayerStart(Controller);
+
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		AMHPlayerCharacter* PlayerCharacter = GetWorld()->SpawnActor<AMHPlayerCharacter>(PlayerCharacterClass, PlayerStart->GetActorLocation(), PlayerStart->GetActorRotation(), SpawnParameters);
+
+		APawn* OldSpectatorPawn = Controller->GetPawn();
+		Controller->UnPossess();
+		OldSpectatorPawn->Destroy();
+		Controller->Possess(PlayerCharacter);
+	}
+	/*else
+	{
+		// Respawn AI hero
+		FActorSpawnParameters SpawnParameters;
+		SpawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+		AGDHeroCharacter* Hero = GetWorld()->SpawnActor<AGDHeroCharacter>(HeroClass, EnemySpawnPoint->GetActorTransform(), SpawnParameters);
+		
+		APawn* OldSpectatorPawn = Controller->GetPawn();
+		Controller->UnPossess();
+		OldSpectatorPawn->Destroy();
+		Controller->Possess(Hero);
+	}*/
 }

@@ -31,6 +31,8 @@ enum class ECardinalDirection4 : uint8
 	Left
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FLivingBeingDiedDelegate, AMHLivingBeing*, LivingBeing);
+
 
 class UMHAbilitySystemComponent;
 /**
@@ -123,6 +125,9 @@ public:
 	// Grant abilities on the Server. The Ability Specs will be replicated to the owning client.
 	virtual void AddCharacterAbilities();
 
+	// Removes all CharacterAbilities. Can only be called by the Server. Removing on the Server will remove from Client too.
+	virtual void RemoveCharacterAbilities();
+
 	// Initialize the Character's attributes. Must run on Server but we run it on Client too
 	// so that we don't have to wait. The Server's replication to the Client won't matter since
 	// the values should be the same.
@@ -131,4 +136,11 @@ public:
 	virtual void AddStartupEffects();
 
 	FGameplayTag DeadTag;
+	FGameplayTag EffectRemoveOnDeathTag;
+	
+	virtual void Die();
+	virtual void FinishDying();
+
+	UPROPERTY(BlueprintAssignable, Category = "LivingBeing")
+	FLivingBeingDiedDelegate OnLivingBeingDied;
 };

@@ -12,7 +12,6 @@ LL_FILE_CVAR(MHBaseGameState);
 AMHGameState::AMHGameState()
 {
 	CurrentOnlineState = Undefined;
-	TestCounter = 0;
 	VoiceRoomId = -1;
 }
 
@@ -70,12 +69,6 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	LL_DBG(this,"AMHGameState::AddPlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
-	TestCounter++;
-	LL_DBG(this,"AMHGameState::AddPlayerState : TestCounter is now {0}", TestCounter);
-	if (AMHPlayerState* MHPlayerState = Cast<AMHPlayerState>(PlayerState))
-	{
-		MHPlayerState->OnPlayerReadyInLobbyChanged.AddDynamic(this, &AMHGameState::AnyPlayerReadyInLobbyChanged);
-	}
 }
 
 void AMHGameState::RemovePlayerState(APlayerState* PlayerState)
@@ -83,34 +76,6 @@ void AMHGameState::RemovePlayerState(APlayerState* PlayerState)
 	Super::RemovePlayerState(PlayerState);
 	LL_DBG(this,"AMHGameState::RemovePlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
-	if (AMHPlayerState* MHPlayerState = Cast<AMHPlayerState>(PlayerState))
-	{
-		MHPlayerState->OnPlayerReadyInLobbyChanged.RemoveDynamic(this, &AMHGameState::AnyPlayerReadyInLobbyChanged);
-	}
 }
 
-void AMHGameState::AnyPlayerReadyInLobbyChanged(bool bNewIsReadyInLobby)
-{
-	OnAnyPlayerReadyInLobbyChanged.Broadcast();
-}
 
-int32 AMHGameState::GetReadyPlayersInLobbyCount()
-{
-	int32 ReadyPlayersCount = 0;
-	for (int32 i = 0; i < PlayerArray.Num(); i++)
-	{
-		if (AMHPlayerState* MHPlayerState = Cast<AMHPlayerState>(PlayerArray[i]))
-		{
-			if (MHPlayerState->bIsReadyInLobby)
-			{
-				ReadyPlayersCount++;
-			}
-		}
-	}
-	return ReadyPlayersCount;
-}
-
-bool AMHGameState::AreAllPlayersReadyInLobby()
-{
-	return GetReadyPlayersInLobbyCount() == PlayerArray.Num();
-}

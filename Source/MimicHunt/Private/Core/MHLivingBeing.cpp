@@ -1,5 +1,6 @@
 #include "Core/MHLivingBeing.h"
 
+#include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
 #include "GameplayAbilitySystem/MHGameplayAbility.h"
@@ -11,6 +12,7 @@ AMHLivingBeing::AMHLivingBeing()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));
+	EffectRemoveOnDeathTag = FGameplayTag::RequestGameplayTag(FName("Effect.RemoveOnDeath"));
 }
 
 bool AMHLivingBeing::IsAlive() const
@@ -261,6 +263,32 @@ void AMHLivingBeing::AddCharacterAbilities()
 	AbilitySystemComponent->bCharacterAbilitiesGiven = true;
 }
 
+void AMHLivingBeing::RemoveCharacterAbilities()
+{
+	if (GetLocalRole() != ROLE_Authority || !AbilitySystemComponent || !AbilitySystemComponent->bCharacterAbilitiesGiven)
+	{
+		return;
+	}
+
+	// Remove any abilities added from a previous call. This checks to make sure the ability is in the startup 'CharacterAbilities' array.
+	TArray<FGameplayAbilitySpecHandle> AbilitiesToRemove;
+	for (const FGameplayAbilitySpec& Spec : AbilitySystemComponent->GetActivatableAbilities())
+	{
+		if ((Spec.SourceObject == this) && CharacterAbilities.Contains(Spec.Ability->GetClass()))
+		{
+			AbilitiesToRemove.Add(Spec.Handle);
+		}
+	}
+
+	// Do in two passes so the removal happens after we have the full list
+	for (int32 i = 0; i < AbilitiesToRemove.Num(); i++)
+	{
+		AbilitySystemComponent->ClearAbility(AbilitiesToRemove[i]);
+	}
+
+	AbilitySystemComponent->bCharacterAbilitiesGiven = false;
+}
+
 void AMHLivingBeing::InitializeAttributes()
 {
 	if (!AbilitySystemComponent) return;
@@ -302,4 +330,37 @@ void AMHLivingBeing::AddStartupEffects()
 	}
 
 	AbilitySystemComponent->bStartupEffectsApplied = true;
+}
+
+void AMHLivingBeing::Die()
+{
+	// Only runs on Server
+	RemoveCharacterAbilities();
+
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetCharacterMovement()->GravityScale = 0;
+	GetCharacterMovement()->Velocity = FVector(0);
+
+	OnLivingBeingDied.Broadcast(this);
+
+	if (AbilitySystemComponent)
+	{
+		AbilitySystemComponent->CancelAllAbilities();
+
+		FGameplayTagContainer EffectTagsToRemove;
+		EffectTagsToRemove.AddTag(EffectRemoveOnDeathTag);
+		int32 NumEffectsRemoved = AbilitySystemComponent->RemoveActiveEffectsWithTags(EffectTagsToRemove);
+
+		AbilitySystemComponent->AddLooseGameplayTag(DeadTag);
+	}
+
+	// TODO : Play death animation here if needed
+	// If so, the FinishDying method should be called at the end of the animation
+	FinishDying();
+}
+
+void AMHLivingBeing::FinishDying()
+{
+	LL_DBG(this, "AMHLivingBeing::FinishDying : {0} is dead", *GetName());
+	Destroy();
 }

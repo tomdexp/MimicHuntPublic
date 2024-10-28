@@ -2,11 +2,22 @@
 
 #include "CoreMinimal.h"
 #include "AbilitySystemInterface.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/PlayerState.h"
 #include "MHPlayerState.generated.h"
 
+struct FOnAttributeChangeData;
 class UMHAttributeSetPlayer;
 class UMHAbilitySystemComponent;
+
+UENUM(BlueprintType)
+enum class EMHPlayerLifeType : uint8
+{
+	Undefined,
+	Alive,
+	Injured,
+	Dead
+};
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerReadyInLobbyChanged, bool, bNewIsReadyInLobby);
 
@@ -17,8 +28,13 @@ class MIMICHUNT_API AMHPlayerState : public APlayerState, public IAbilitySystemI
 public:
 	AMHPlayerState();
 	
-	UPROPERTY(ReplicatedUsing=OnRep_IsReadyInLobby, BlueprintReadOnly, Category = "Online")
-	bool bIsReadyInLobby;
+	virtual void BeginPlay() override;
+
+	UPROPERTY(ReplicatedUsing = OnRep_CurrentPlayerLifeType, BlueprintReadOnly, Category = "Player")
+	EMHPlayerLifeType CurrentPlayerLifeType = EMHPlayerLifeType::Undefined;
+
+	UFUNCTION()
+	void OnRep_CurrentPlayerLifeType();
 
 	UPROPERTY()
 	TObjectPtr<UMHAbilitySystemComponent> AbilitySystemComponent;
@@ -30,15 +46,20 @@ public:
 	
 	UMHAttributeSetPlayer* GetAttributeSetPlayer() const;
 
-	UFUNCTION(BlueprintCallable, Server, Reliable, WithValidation)
-	void Server_SetIsReadyInLobby(bool bNewIsReadyInLobby);
-	
-	UFUNCTION()
-	void OnRep_IsReadyInLobby();
-
-	UPROPERTY(BlueprintAssignable, Category = "Online")
-	FOnPlayerReadyInLobbyChanged OnPlayerReadyInLobbyChanged;
-
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+
+	FGameplayTag DeadTag;
+	
+	float GetHealth() const;
+	float GetMaxHealth() const;
+
+	FDelegateHandle HealthChangedDelegateHandle;
+	FDelegateHandle MaxHealthChangedDelegateHandle;
+
+	virtual void HealthChanged(const FOnAttributeChangeData& Data);
+	virtual void MaxHealthChanged(const FOnAttributeChangeData& Data);
+
+	UFUNCTION(BlueprintCallable, Category = "Player")
+	bool IsAlive() const;
 
 };

@@ -1,5 +1,6 @@
 #include "Core/MHPlayerState.h"
 
+#include "MHPlayerCharacter.h"
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
 #include "GameplayAbilitySystem/AttributeSets/MHAttributeSetPlayer.h"
 #include "Net/UnrealNetwork.h"
@@ -20,21 +21,25 @@ AMHPlayerState::AMHPlayerState()
 	AttributeSetPlayer = CreateDefaultSubobject<UMHAttributeSetPlayer>(TEXT("AttributeSetPlayer"));
 
 	NetUpdateFrequency = 50.0f;
+
+	// Cache tags
+	DeadTag = FGameplayTag::RequestGameplayTag(FName("State.Dead"));
 }
 
-void AMHPlayerState::Server_SetIsReadyInLobby_Implementation(bool bNewIsReadyInLobby)
+void AMHPlayerState::BeginPlay()
 {
-	if (bIsReadyInLobby != bNewIsReadyInLobby)
+	Super::BeginPlay();
+
+	if (AbilitySystemComponent)
 	{
-		//LL_DBG(this, "AMHPlayerState::SetIsReadyInLobby : Player {0} ready in lobby = {1}", GetPlayerName(), bNewIsReadyInLobby);
-		bIsReadyInLobby = bNewIsReadyInLobby;
-		OnRep_IsReadyInLobby();
+		HealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetPlayer->GetHealthAttribute()).AddUObject(this, &AMHPlayerState::HealthChanged);
+		MaxHealthChangedDelegateHandle = AbilitySystemComponent->GetGameplayAttributeValueChangeDelegate(AttributeSetPlayer->GetMaxHealthAttribute()).AddUObject(this, &AMHPlayerState::MaxHealthChanged);
 	}
 }
 
-bool AMHPlayerState::Server_SetIsReadyInLobby_Validate(bool bNewIsReadyInLobby)
+void AMHPlayerState::OnRep_CurrentPlayerLifeType()
 {
-	return true;
+	LL_DBG(this, "AMHPlayerState::OnRep_CurrentPlayerLifeType CurrentPlayerLifeType: {0}", CurrentPlayerLifeType);
 }
 
 UAbilitySystemComponent* AMHPlayerState::GetAbilitySystemComponent() const
@@ -47,14 +52,40 @@ UMHAttributeSetPlayer* AMHPlayerState::GetAttributeSetPlayer() const
 	return AttributeSetPlayer;
 }
 
-void AMHPlayerState::OnRep_IsReadyInLobby()
-{
-	LL_DBG(this, "AMHPlayerState::OnRep_IsReadyInLobby : Player {0} ready in lobby = {1}", GetPlayerName(), bIsReadyInLobby);
-	OnPlayerReadyInLobbyChanged.Broadcast(bIsReadyInLobby);
-}
-
 void AMHPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
-	DOREPLIFETIME(AMHPlayerState, bIsReadyInLobby);
+	DOREPLIFETIME(AMHPlayerState, CurrentPlayerLifeType);
+}
+
+float AMHPlayerState::GetHealth() const
+{
+	return AttributeSetPlayer->GetHealth();
+}
+
+float AMHPlayerState::GetMaxHealth() const
+{
+	return AttributeSetPlayer->GetMaxHealth();
+}
+
+void AMHPlayerState::HealthChanged(const FOnAttributeChangeData& Data)
+{
+	// If the player died, handle death
+	if (!IsAlive() && !AbilitySystemComponent->HasMatchingGameplayTag(DeadTag))
+	{
+		if (AMHPlayerCharacter* PlayerCharacter = Cast<AMHPlayerCharacter>(GetPawn()))
+		{
+			PlayerCharacter->Die();
+		}
+	}
+}
+
+void AMHPlayerState::MaxHealthChanged(const FOnAttributeChangeData& Data)
+{
+	// TODO : Update UI here
+}
+
+bool AMHPlayerState::IsAlive() const
+{
+	return GetHealth() > 0.0f;
 }

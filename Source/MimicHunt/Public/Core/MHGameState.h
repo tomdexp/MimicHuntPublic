@@ -5,6 +5,7 @@
 #include "Networking/PersistentDataManager.h"
 #include "MHGameState.generated.h"
 
+// TODO : Clean this up, it might not be needed
 UENUM(BlueprintType)
 enum EOnlineState
 {
@@ -45,23 +46,11 @@ public:
 	TObjectPtr<APersistentDataManager> PersistentDataManager;
 
 	UFUNCTION()
-	void AnyPlayerReadyInLobbyChanged(bool bNewIsReadyInLobby);
-
-	UFUNCTION(BlueprintCallable , Category = "Online")
-	int32 GetReadyPlayersInLobbyCount();
-
-	UFUNCTION(BlueprintCallable , Category = "Online")
-	bool AreAllPlayersReadyInLobby();
-
-	UFUNCTION()
 	void OnRep_CurrentOnlineState();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
-
-	UPROPERTY()
-	int32 TestCounter;
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Online")
 	int32 VoiceRoomId = -1;
