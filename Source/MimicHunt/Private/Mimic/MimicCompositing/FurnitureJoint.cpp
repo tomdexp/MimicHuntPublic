@@ -35,9 +35,14 @@ void UFurnitureJoint::BeginPlay()
 	if(ChildChunkComponent!=nullptr)
 		ChildChunkMesh=ChildChunkComponent->GetStaticMesh();
 	Mimic=Cast<AMimic>(GetOwner());
-	OnMimicBirth();
 	Mimic->OnMimicWakeDelegate.AddUObject(this,&UFurnitureJoint::OnMimicWake);
 	Mimic->OnMimicSleepDelegate.AddUObject(this,&UFurnitureJoint::OnMimicSleep);
+
+	if(!GetOwner()->HasAuthority())
+	{
+		Mimic->OnMimicChoseOrgansDelegate.AddUObject(this, &UFurnitureJoint::OnMimicChoseOrgans);
+	}
+	InitializeJoint();
 }
 
 // Called every frame
@@ -48,27 +53,8 @@ void UFurnitureJoint::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	// ...
 }
 
-void UFurnitureJoint::OnMimicBirth()
+void UFurnitureJoint::ChooseRandomOrgan()
 {
-	//Compute the start to end direction on mimic birth, because calculating it on wake would make it altered by the shifting around of the wake up of the previous joints
-	if(EndAttachPoint!=nullptr)
-	{
-		USceneComponent* jointStartAttachPoint=this;
-		USceneComponent* jointEndAttachPoint=EndAttachPoint;
-		if(IsFlipped)
-		{
-			jointEndAttachPoint=this;
-			jointStartAttachPoint=EndAttachPoint;
-		}
-	
-		StartToEndVector=jointEndAttachPoint->GetComponentLocation()-jointStartAttachPoint->GetComponentLocation();
-	}
-	
-	if(GetChildActor()!=nullptr)
-	{
-		UClass* clas=GetChildActor()->GetClass();
-	}
-	
 	if(OrganBundles.Num()==0) return;
 	//We choose which organ we take from the bundles
 	TArray<FOrganBundleEntry>  ponderatedArray=TArray<FOrganBundleEntry>();
@@ -89,13 +75,52 @@ void UFurnitureJoint::OnMimicBirth()
 			}
 		}
 	}
+	
 	if(ponderatedArray.Num()==0) return; 
 	int32 randomIndex = FMath::RandRange(0, ponderatedArray.Num() - 1);
-	FOrganBundleEntry randomEntry = ponderatedArray[randomIndex];
-	if(randomEntry.Organ==nullptr) return;
-	SetChildActorClass(randomEntry.Organ);
+	auto randomOrganBundleEntry = ponderatedArray[randomIndex];
+	RandomSeed=FMath::RandRange(TNumericLimits<int>::Min(), TNumericLimits<int>::Max());
+
+	ChosenRandomOrgan=randomOrganBundleEntry.Organ;
+	Mimic->RegisterChosenOrgan(GetName(),ChosenRandomOrgan, RandomSeed);
+}
+
+void UFurnitureJoint::OnMimicChoseOrgans(const FChosenOrgansList& chosenOrgansList)
+{
+	for(auto entry : chosenOrgansList.ChosenOrgans)
+	{
+		if(GetName()!=entry.JointName) continue;
+		ChosenRandomOrgan=entry.Organ;
+		RandomSeed=entry.RandomSeed;
+	}
+	InitializeJoint();
+}
+
+void UFurnitureJoint::InitializeJoint()
+{
+	//Compute the start to end direction on mimic birth, because calculating it on wake would make it altered by the shifting around of the wake up of the previous joints
+	if(EndAttachPoint!=nullptr)
+	{
+		USceneComponent* jointStartAttachPoint=this;
+		USceneComponent* jointEndAttachPoint=EndAttachPoint;
+		if(IsFlipped)
+		{
+			jointEndAttachPoint=this;
+			jointStartAttachPoint=EndAttachPoint;
+		}
+	
+		StartToEndVector=jointEndAttachPoint->GetComponentLocation()-jointStartAttachPoint->GetComponentLocation();
+	}
+
+	if(GetOwner()->HasAuthority())
+	{
+		ChooseRandomOrgan();
+	}
+	
+	if(ChosenRandomOrgan==nullptr) return;
+	SetChildActorClass(ChosenRandomOrgan);
 	Organ=Cast<AMimicOrgan>(GetChildActor());
-	Organ->Initialize(Mimic,this);
+	Organ->Initialize(Mimic,this, RandomSeed);
 	Organ->OnMimicBirth();
 	if(ChildChunkComponent!=nullptr)
 	{

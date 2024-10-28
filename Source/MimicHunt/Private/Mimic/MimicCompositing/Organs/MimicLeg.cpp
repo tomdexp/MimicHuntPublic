@@ -19,7 +19,7 @@ void AMimicLeg::BeginPlay()
 
 void AMimicLeg::OnMimicBirth()
 {
-	FVector mimicRootPosition=_mimic->GetActorLocation();
+	FVector mimicRootPosition=Mimic->GetActorLocation();
 	//Find the direction of Mimic to self
 	FVector rootToJoint=GetActorLocation()-mimicRootPosition;
 	FVector direction=rootToJoint.GetSafeNormal();

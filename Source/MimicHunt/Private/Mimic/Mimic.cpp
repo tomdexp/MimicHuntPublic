@@ -3,6 +3,7 @@
 #include "Mimic/Mimic.h"
 
 #include "Mimic/MimicCompositing/FurnitureJoint.h"
+#include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
 LL_FILE_CVAR(LogMimic);
@@ -17,12 +18,15 @@ AMimic::AMimic()
 {
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 // Called when the game starts or when spawned
 void AMimic::BeginPlay()
 {
 	Super::BeginPlay();
+	MimicBirth();
 }
 
 void AMimic::OnConstruction(const FTransform& Transform)
@@ -73,9 +77,20 @@ void AMimic::OnConstruction(const FTransform& Transform)
 	}
 }
 
+void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	// Here we list the variables we want to replicate
+	DOREPLIFETIME(AMimic, ChosenOrgans);
+	DOREPLIFETIME(AMimic, TestRep);
+}
+
 void AMimic::MimicBirth()
 {
 	OnMimicBirthDelegate.Broadcast();
+	if(!HasAuthority()) return;
+	ChosenOrgans=TempChosenOrgans;
 }
 
 void AMimic::MimicWake()
@@ -88,9 +103,29 @@ void AMimic::MimicSleep()
 	OnMimicSleepDelegate.Broadcast();
 }
 
+void AMimic::OnRep_ChosenOrgans()
+{
+	UE_LOG(LogTemp, Log, TEXT("ChosenOrgans Replicated"))
+	OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
+}
+
+void AMimic::OnRep_Test()
+{
+	UE_LOG(LogTemp, Log, TEXT("TestRep Replicated"))
+}
+
 // Called every frame
 void AMimic::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AMimic::RegisterChosenOrgan(FString jointName, UBlueprintGeneratedClass* organ, int randomSeed)
+{
+	FChosenOrganEntry newEntry;
+	newEntry.JointName=jointName;
+	newEntry.Organ=organ;
+	newEntry.RandomSeed=randomSeed;
+	TempChosenOrgans.ChosenOrgans.Add(newEntry);
 }
 

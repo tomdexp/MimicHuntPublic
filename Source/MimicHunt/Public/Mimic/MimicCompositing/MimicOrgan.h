@@ -19,7 +19,7 @@ public:
 	virtual void OnMimicWake();
 	virtual void OnMimicSleep();
 	
-	void Initialize(AMimic* mimic, UChildActorComponent* ownerComponent);
+	void Initialize(AMimic* mimic, UChildActorComponent* ownerComponent, int randomSeed);
 	
 	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic")
 	bool IsPhysicked;
@@ -46,9 +46,11 @@ protected:
 	void OnMimicSleepEvent();
 	
 	UPROPERTY(BlueprintReadOnly)
-	UChildActorComponent* _ownerComponent=nullptr;
+	UChildActorComponent* OwnerComponent=nullptr;
 	UPROPERTY(BlueprintReadOnly)
-	AMimic* _mimic=nullptr;
+	AMimic* Mimic=nullptr;
+	UPROPERTY(BlueprintReadOnly)
+	FRandomStream RandomStream;
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

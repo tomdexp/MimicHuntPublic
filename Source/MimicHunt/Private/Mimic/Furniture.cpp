@@ -30,7 +30,6 @@ void AFurniture::TurnToMimic()
 	FTransform SpawnTransform = this->GetActorTransform();
 	UWorld* World = this->GetWorld();
 	AActor* NewActor = World->SpawnActor<AActor>(FurnitureMimicMap->GetMimic(BlueprintClass), SpawnTransform);
-	
 	this->Destroy();
 }
 
