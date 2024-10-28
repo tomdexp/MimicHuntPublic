@@ -106,6 +106,9 @@ public:
 	UFUNCTION()
 	void OnRep_OdinID();
 
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForOdinID(FLatentActionInfo LatentInfo);
+
 	UPROPERTY(BlueprintAssignable)
 	FOnRepOdinID OnOdinIDChanged;
 

@@ -364,3 +364,12 @@ void AMHPlayerCharacter::OnRep_OdinID()
 		OnReadyToInitOdinID.Broadcast(OdinID);
 	}
 }
+
+FVoidCoroutine AMHPlayerCharacter::WaitForOdinID(FLatentActionInfo LatentInfo)
+{
+	while (OdinID == FGuid())
+	{
+		co_await UE5Coro::Latent::NextTick();
+	}
+	co_return;
+}
