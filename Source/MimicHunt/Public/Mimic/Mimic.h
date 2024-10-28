@@ -17,11 +17,11 @@ struct FChosenOrganEntry
 	GENERATED_BODY()
 	
 	UPROPERTY()
-	FString JointName;
+	FString JointName="";
 	UPROPERTY()
-	UBlueprintGeneratedClass* Organ;
+	UBlueprintGeneratedClass* Organ=nullptr;
 	UPROPERTY()
-	int RandomSeed;
+	int RandomSeed=0;
 };
 
 //This way we're sure Unreal doesn't do voodoo things like Delta Serialization
@@ -30,7 +30,11 @@ struct FChosenOrgansList
 {
 	GENERATED_BODY()
 	UPROPERTY()
-	TArray<FChosenOrganEntry> ChosenOrgans;
+	TArray<FChosenOrganEntry> ChosenOrgans=TArray<FChosenOrganEntry>();
+	bool IsEmpty() const
+	{
+		return ChosenOrgans.Num() == 0;
+	}
 };
 
 UCLASS()

@@ -88,7 +88,16 @@ void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 void AMimic::MimicBirth()
 {
 	OnMimicBirthDelegate.Broadcast();
-	if(!HasAuthority()) return;
+	if(!HasAuthority())
+	{
+		//If ChosenOrgans isn't empty, it means it was already replicated before birth was called, so we need to call this delegates now
+		//If it's empty, then it means it hasn't been replicated yet and the delegate will get called in OnRep_ChosenOrgans
+		if(!ChosenOrgans.IsEmpty())
+		{
+			OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
+		}
+		return;
+	}
 	ChosenOrgans=TempChosenOrgans;
 	MimicSleep();
 }
@@ -109,7 +118,7 @@ void AMimic::MimicSleep()
 
 void AMimic::OnRep_ChosenOrgans()
 {
-	UE_LOG(LogTemp, Log, TEXT("ChosenOrgans Replicated"))
+	//MimicBirth();
 	OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
 }
 

@@ -206,9 +206,7 @@ void UFurnitureJoint::OnMimicWake()
 		Organ->OnMimicWake();
 		return;
 	}
-
-	UE_LOG(LogTemp, Log, TEXT("Attached to %s of %s"),*Organ->PhysickedComponent->GetAttachParent()->GetName(),*Organ->PhysickedComponent->GetAttachParentActor()->GetName())
-
+	
 	//Create the physic joint between the organ and the joint's child chunk
 	if(_endConstraintComponent==nullptr)
 	{
