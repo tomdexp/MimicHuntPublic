@@ -35,4 +35,51 @@ void APersistentDataManager::GetLifetimeReplicatedProps(TArray<class FLifetimePr
 	DOREPLIFETIME(APersistentDataManager, PersistentData);
 }
 
+void APersistentDataManager::OnRep_PersistentData()
+{
+	LL_DBG(this, "APersistentDataManager::OnRep_PersistentData LobbyMoney: {0}", PersistentData.LobbyMoney);
+	OnPersistentDataChanged.Broadcast(PersistentData);
+}
+
+int32 APersistentDataManager::GetLobbyMoney() const
+{
+	return PersistentData.LobbyMoney;
+}
+
+void APersistentDataManager::AddLobbyMoney(int32 Amount)
+{
+	if (!HasAuthority())
+	{
+		LL_WRN(this, "APersistentDataManager::AddLobbyMoney called on client but can only be called on server");
+		return;
+	}
+	LL_DBG(this, "APersistentDataManager::AddLobbyMoney {0}", Amount);
+	PersistentData.LobbyMoney += Amount;
+	OnRep_PersistentData();
+}
+
+void APersistentDataManager::RemoveLobbyMoney(int32 Amount)
+{
+	if (!HasAuthority())
+	{
+		LL_WRN(this, "APersistentDataManager::RemoveLobbyMoney called on client but can only be called on server");
+		return;
+	}
+	LL_DBG(this, "APersistentDataManager::RemoveLobbyMoney {0}", Amount);
+	PersistentData.LobbyMoney -= Amount;
+	OnRep_PersistentData();
+}
+
+void APersistentDataManager::SetLobbyMoney(int32 Amount)
+{
+	if (!HasAuthority())
+	{
+	 	LL_WRN(this, "APersistentDataManager::SetLobbyMoney called on client but can only be called on server");
+	 	return;
+	}
+	LL_DBG(this, "APersistentDataManager::SetLobbyMoney {0}", Amount);
+	PersistentData.LobbyMoney = Amount;
+	OnRep_PersistentData();
+}
+
 

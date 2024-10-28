@@ -1,8 +1,10 @@
 #include "Core/MHCheatManager.h"
 
 #include "MHPlayerCharacter.h"
+#include "Core/MHGameState.h"
 #include "Utils/LLog.h"
 
+class AMHGameState;
 LL_FILE_CVAR(MHCheatManager);
 
 void UMHCheatManager::SummonFakePlayer()
@@ -15,6 +17,37 @@ void UMHCheatManager::SummonMimic()
 {
     // MimicCharacterClass is a TSubclassOf<AMHMimicCharacter>
     SpawnActorWithLineTrace(MimicCharacterClass);
+}
+
+void UMHCheatManager::AddLobbyMoney(int32 Amount)
+{
+    if (AMHGameState* GameState = GetWorld()->GetGameState<AMHGameState>())
+    {
+        if (!GameState->HasAuthority()) return;
+        GameState->PersistentDataManager->AddLobbyMoney(Amount);
+    }
+}
+
+void UMHCheatManager::RemoveLobbyMoney(int32 Amount)
+{
+    if (AMHGameState* GameState = GetWorld()->GetGameState<AMHGameState>())
+    {
+        if (!GameState->HasAuthority()) return;
+        GameState->PersistentDataManager->RemoveLobbyMoney(Amount);
+    }
+}
+
+void UMHCheatManager::SetLobbyMoney(int32 Amount)
+{
+    if (AMHGameState* GameState = GetWorld()->GetGameState<AMHGameState>())
+    {
+        if (!GameState->HasAuthority()) return;
+        GameState->PersistentDataManager->SetLobbyMoney(Amount);
+    }
+}
+
+void UMHCheatManager::GetLobbyMoney()
+{
 }
 
 void UMHCheatManager::SpawnActorWithLineTrace(TSubclassOf<AActor> ActorClass)

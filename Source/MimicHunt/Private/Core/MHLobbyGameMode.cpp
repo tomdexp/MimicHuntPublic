@@ -37,5 +37,11 @@ void AMHLobbyGameMode::PreInitializeComponents()
 	else
 	{
 		LL_DBG(this, "Spawned PersistentDataManager");
+		// Cache it in GameState so it's easily accessible
+		if (AMHGameState* GS = GetGameState<AMHGameState>())
+		{
+			GS->PersistentDataManager = PersistentDataManager;
+			LL_DBG(this, "Cached PersistentDataManager in GameState");
+		}
 	}
 }

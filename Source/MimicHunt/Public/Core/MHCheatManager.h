@@ -19,6 +19,18 @@ public:
 	UFUNCTION(Exec)
 	void SummonMimic();
 
+	UFUNCTION(Exec)
+	void AddLobbyMoney(int32 Amount);
+
+	UFUNCTION(Exec)
+	void RemoveLobbyMoney(int32 Amount);
+
+	UFUNCTION(Exec)
+	void SetLobbyMoney(int32 Amount);
+
+	UFUNCTION(Exec)
+	void GetLobbyMoney();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CheatManager")
 	TSubclassOf<AActor> PlayerCharacterClass;
 

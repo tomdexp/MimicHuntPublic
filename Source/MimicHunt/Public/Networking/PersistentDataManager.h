@@ -13,6 +13,8 @@ struct FPersistentData
 	int32 LobbyMoney = 0;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPersistentDataChanged, const FPersistentData&, PersistentData);
+
 /**
  * This class will persist in the online gameplay between levels, it should be reset when the online gameplay ends
  * It is inspired by this documentation : https://wizardcell.com/unreal/persistent-data/#5-getseamlesstravelactorlist
@@ -27,7 +29,26 @@ public:
 	APersistentDataManager();
 	virtual void BeginPlay() override;
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
+	
 
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Persistent Data")
+	UPROPERTY(ReplicatedUsing=OnRep_PersistentData, BlueprintReadOnly, Category = "Persistent Data")
 	FPersistentData PersistentData;
+
+	UFUNCTION()
+	virtual void OnRep_PersistentData();
+
+	UPROPERTY(BlueprintAssignable, Category = "Persistent Data")
+	FOnPersistentDataChanged OnPersistentDataChanged;
+
+	UFUNCTION(BlueprintCallable, Category = "Persistent Data|Money")
+	int32 GetLobbyMoney() const;
+	
+	UFUNCTION(BlueprintCallable, Category = "Persistent Data|Money")
+	void AddLobbyMoney(int32 Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Persistent Data|Money")
+	void RemoveLobbyMoney(int32 Amount);
+
+	UFUNCTION(BlueprintCallable, Category = "Persistent Data|Money")
+	void SetLobbyMoney(int32 Amount);
 };
