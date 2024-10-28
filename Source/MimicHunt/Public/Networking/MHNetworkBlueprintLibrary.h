@@ -14,5 +14,8 @@ class MIMICHUNT_API UMHNetworkBlueprintLibrary : public UBlueprintFunctionLibrar
 	static void ServerTravelToLevel(const UObject* WorldContextObject, const FString& LevelName);
 
 	UFUNCTION(BlueprintCallable)
+	static void QuitToMainMenu(const UObject* WorldContextObject);
+
+	UFUNCTION(BlueprintCallable)
 	static APersistentDataManager* GetPersistentDataManager(const UObject* WorldContextObject, const AGameStateBase* GameState);
 };

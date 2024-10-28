@@ -18,6 +18,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	bool HasJoinCode() const { return bHasJoinCode; }
+
+	UFUNCTION(BlueprintCallable)
+	void ClearJoinCode();
 	
 private:
 	FString CurrentLobbyJoinCode;

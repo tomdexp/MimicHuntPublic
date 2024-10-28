@@ -2,6 +2,8 @@
 
 #include "EngineUtils.h"
 #include "Core/MHGameState.h"
+#include "Interfaces/OnlineSessionInterface.h"
+#include "Kismet/GameplayStatics.h"
 #include "Utils/LLog.h"
 
 LL_FILE_CVAR(MHNetworkBlueprintLibrary);
@@ -16,8 +18,18 @@ void UMHNetworkBlueprintLibrary::ServerTravelToLevel(const UObject* WorldContext
 	}
 }
 
+void UMHNetworkBlueprintLibrary::QuitToMainMenu(const UObject* WorldContextObject)
+{
+	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
+	{
+		LL_DBG(World, "UMHNetworkBlueprintLibrary::QuitToMainMenu : Quitting to main menu");
+		// If server, destroy the session
+		UGameplayStatics::OpenLevel(World, FName("L_MainMenu"));
+	}
+}
+
 APersistentDataManager* UMHNetworkBlueprintLibrary::GetPersistentDataManager(const UObject* WorldContextObject,
-	const AGameStateBase* GameState)
+                                                                             const AGameStateBase* GameState)
 {
 	if (UWorld* World = GEngine->GetWorldFromContextObject(WorldContextObject, EGetWorldErrorMode::LogAndReturnNull))
 	{

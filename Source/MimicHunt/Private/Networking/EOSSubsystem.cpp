@@ -17,3 +17,10 @@ FString UEOSSubsystem::CreateLobbyJoinCode()
 	bHasJoinCode = true;
 	return CurrentLobbyJoinCode;
 }
+
+void UEOSSubsystem::ClearJoinCode()
+{
+	bHasJoinCode = false;
+	CurrentLobbyJoinCode.Empty();
+	
+}
