@@ -1,5 +1,6 @@
 #include "Audio/MHAudioSubsystem.h"
 
+#include "odin_sdk.h"
 #include "TencentGMEDevice.h"
 #include "TencentGME_Wwise.h"
 #include "TencentGMEPlugin.h"
@@ -28,6 +29,12 @@ void UMHAudioSubsystem::GetGMEMessage(int& localUTCTime, int& messageType, int& 
 {
 	FTencentGMEDevice::GetGMEMessage(localUTCTime, messageType, code, message1, message2);
 	LL_DBG(this, "Message 1 : %s", message1);
+}
+
+void UMHAudioSubsystem::StartupOdin()
+{
+	LL_DBG(this, "UMHAudioSubsystem::StartupOdin calling odin_startup");
+	odin_startup(ODIN_VERSION);
 }
 
 void UMHAudioSubsystem::CleanRoomId()

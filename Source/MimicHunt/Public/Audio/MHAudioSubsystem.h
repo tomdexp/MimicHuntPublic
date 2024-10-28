@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void GetGMEMessage(int& localUTCTime, int& messageType, int& code, FString& message1, FString& message2);
 
+	UFUNCTION(BlueprintCallable, Category = "Audio|Odin")
+	void StartupOdin();
+
 	UPROPERTY()
 	int32 VoiceRoomId = -1;
 
