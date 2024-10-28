@@ -50,6 +50,11 @@ void UMHCheatManager::SetLobbyMoney(int32 Amount)
 
 void UMHCheatManager::GetLobbyMoney()
 {
+    if (AMHGameState* GameState = GetWorld()->GetGameState<AMHGameState>())
+    {
+        if (!GameState->HasAuthority()) return;
+        LL_DBG(this, "Lobby Money: {0}", GameState->PersistentDataManager->GetLobbyMoney());
+    }
 }
 
 void UMHCheatManager::BirthMimic()

@@ -12,7 +12,7 @@ class UMHPlayerData;
 class UCameraComponent;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepOdinID, FGuid, OdinID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnReadyToInitOdinID, FGuid, OdinID);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReadyToInitOdin);
 
 UCLASS()
 class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing
@@ -113,5 +113,8 @@ public:
 	FOnRepOdinID OnOdinIDChanged;
 
 	UPROPERTY(BlueprintAssignable)
-	FOnReadyToInitOdinID OnReadyToInitOdinID;
+	FOnReadyToInitOdin OnReadyToInitOdin;
+
+	UFUNCTION(BlueprintNativeEvent)
+	void OnReadyToInitOdin_BP();
 };

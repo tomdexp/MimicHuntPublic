@@ -19,6 +19,7 @@ public:
 	virtual void InitGameState() override;
 	virtual void RespawnPlayerCharacter(AController* Controller);
 	virtual void PlayerCharacterDied(AController* Controller);
+	virtual bool AllowCheats(APlayerController* P) override;
 	
 	UPROPERTY(Transient)
 	TObjectPtr<class APersistentDataManager> PersistentDataManager;
