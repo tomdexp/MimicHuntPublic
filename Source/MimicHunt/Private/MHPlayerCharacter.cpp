@@ -42,7 +42,7 @@ AMHPlayerCharacter::AMHPlayerCharacter()
 	// FirstPersonMeshComponent->SetRelativeRotation(FRotator(0.9f, -19.19f, 5.2f));
 	FirstPersonMeshComponent->SetRelativeLocation(FVector(-30.f, 0.f, -150.f));
 
-	AkOdinInputComponent = CreateDefaultSubobject<UAkOdinInputComponent>(TEXT("AkOdinInputComponent"));
+	//AkOdinInputComponent = CreateDefaultSubobject<UAkOdinInputComponent>(TEXT("AkOdinInputComponent"));
 	
 
 	// Hide the main mesh in the 1st person view
@@ -68,13 +68,6 @@ void AMHPlayerCharacter::BeginPlay()
 		// Set the player jump velocity
 		GetCharacterMovement()->JumpZVelocity = PlayerData->JumpVelocity;
 	}
-
-	if (HasAuthority())
-	{
-		OdinID = FGuid::NewGuid(); // This is replicated
-		OnRep_OdinID();
-	}
-
 	Super::BeginPlay();
 }
 
@@ -101,7 +94,6 @@ void AMHPlayerCharacter::GetLifetimeReplicatedProps(TArray<class FLifetimeProper
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHPlayerCharacter, bIsSprinting);
 	DOREPLIFETIME(AMHPlayerCharacter, ReplicatedCameraRotation);
-	DOREPLIFETIME(AMHPlayerCharacter, OdinID);
 }
 
 void AMHPlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -144,12 +136,6 @@ void AMHPlayerCharacter::PossessedBy(AController* NewController)
 		AddStartupEffects();
 
 		AddCharacterAbilities();
-
-		if (IsLocallyControlled())
-		{
-			OnReadyToInitOdin_BP();
-			LL_DBG(this, "AMHPlayerCharacter::PossessedBy : OnReadyToInitOdin_BP", OdinID);
-		}
 	}
 }
 
@@ -168,12 +154,6 @@ void AMHPlayerCharacter::OnRep_PlayerState()
 
 		// Init ASC Actor Info for clients. Server will init its ASC when it possesses a new Actor.
 		AbilitySystemComponent->InitAbilityActorInfo(PS, this);
-
-		if(IsLocallyControlled())
-		{
-			OnReadyToInitOdin_BP();
-			LL_DBG(this, "AMHPlayerCharacter::OnRep_PlayerState : OnReadyToInitOdin_BP", OdinID);
-		}
 	}
 }
 
@@ -352,6 +332,15 @@ FVoidCoroutine AMHPlayerCharacter::WaitForPlayerState(FLatentActionInfo LatentIn
 	co_return;
 }
 
+FVoidCoroutine AMHPlayerCharacter::WaitForPlayerController(FLatentActionInfo LatentInfo)
+{
+	while (!GetController())
+	{
+		co_await UE5Coro::Latent::NextTick();
+	}
+	co_return;
+}
+
 FVector AMHPlayerCharacter::GetLookAtTarget() const
 {
 	FVector Start = FirstPersonCameraComponent->GetComponentLocation();
@@ -359,28 +348,4 @@ FVector AMHPlayerCharacter::GetLookAtTarget() const
 	FVector End = Start + (ForwardVector * 100.0f); // 1 meter in front
 
 	return End;
-}
-
-void AMHPlayerCharacter::OnRep_OdinID()
-{
-	LL_DBG(this, "AMHPlayerCharacter::OnRep_OdinID is {0}", OdinID);
-	OnOdinIDChanged.Broadcast(OdinID);
-	// Get the GameInstance
-	if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
-	{
-		GameInstance->IdsToPlayerCharacters.Add(OdinID, this);
-	}
-}
-
-FVoidCoroutine AMHPlayerCharacter::WaitForOdinID(FLatentActionInfo LatentInfo)
-{
-	while (OdinID == FGuid())
-	{
-		co_await UE5Coro::Latent::NextTick();
-	}
-	co_return;
-}
-
-void AMHPlayerCharacter::OnReadyToInitOdin_BP_Implementation()
-{
 }

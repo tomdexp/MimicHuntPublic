@@ -5,6 +5,8 @@
 #include "Engine/GameInstance.h"
 #include "MHGameInstance.generated.h"
 
+class AVoiceChat;
+
 UCLASS()
 class MIMICHUNT_API UMHGameInstance : public UGameInstance
 {
@@ -15,5 +17,5 @@ protected:
 	void AutoLogin();
 public:
 	UPROPERTY(BlueprintReadWrite, VisibleAnywhere)
-	TMap<FGuid, AMHPlayerCharacter*> IdsToPlayerCharacters;
+	TMap<FGuid, AVoiceChat*> IdsToPlayerVoiceChatActors;
 };

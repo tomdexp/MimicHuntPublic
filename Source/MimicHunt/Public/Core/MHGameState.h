@@ -5,6 +5,7 @@
 #include "Networking/PersistentDataManager.h"
 #include "MHGameState.generated.h"
 
+class AVoiceChat;
 // TODO : Clean this up, it might not be needed
 UENUM(BlueprintType)
 enum EOnlineState
@@ -26,6 +27,9 @@ public:
 	AMHGameState();
 
 	virtual void BeginPlay() override;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<AVoiceChat> VoiceChatBlueprint;
 	
 	UFUNCTION(BlueprintCallable , Category = "Online")
 	void SetOnlineState(EOnlineState NewOnlineState);

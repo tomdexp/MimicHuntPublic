@@ -1,7 +1,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Audio/AkOdinInputComponent.h"
 #include "Core/MHLivingBeing.h"
 #include "UE5Coro/UnrealTypes.h"
 #include "MHPlayerCharacter.generated.h"
@@ -11,8 +10,6 @@ class UMHAbilitySystemComponent;
 class UMHPlayerData;
 class UCameraComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnRepOdinID, FGuid, OdinID);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnReadyToInitOdin);
 
 UCLASS()
 class MIMICHUNT_API AMHPlayerCharacter : public AMHLivingBeing
@@ -37,9 +34,6 @@ public:
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
 	TObjectPtr<USkeletalMeshComponent> FirstPersonMeshComponent;
-
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere)
-	TObjectPtr<UAkOdinInputComponent> AkOdinInputComponent;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void PossessedBy(AController* NewController) override;
@@ -88,6 +82,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
 	FVoidCoroutine WaitForPlayerState(FLatentActionInfo LatentInfo);
 
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForPlayerController(FLatentActionInfo LatentInfo);
+
 	/**
  * Returns a target that 1 meter in front of the character eyes, but only in the vertical plane.
  */
@@ -99,22 +96,4 @@ public:
 	/************************************************************************/
 	UPROPERTY()
 	TObjectPtr<UMHAttributeSetPlayer> AttributeSetPlayer;
-
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, ReplicatedUsing = OnRep_OdinID)
-	FGuid OdinID;
-
-	UFUNCTION()
-	void OnRep_OdinID();
-
-	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
-	FVoidCoroutine WaitForOdinID(FLatentActionInfo LatentInfo);
-
-	UPROPERTY(BlueprintAssignable)
-	FOnRepOdinID OnOdinIDChanged;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnReadyToInitOdin OnReadyToInitOdin;
-
-	UFUNCTION(BlueprintNativeEvent)
-	void OnReadyToInitOdin_BP();
 };

@@ -2,7 +2,10 @@
 
 #include "OnlineSubsystem.h"
 #include "Audio/MHAudioSubsystem.h"
+#include "Audio/VoiceChat.h"
+#include "Core/MHGameInstance.h"
 #include "Core/MHPlayerState.h"
+#include "Kismet/GameplayStatics.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
@@ -69,6 +72,54 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 	Super::AddPlayerState(PlayerState);
 	LL_DBG(this,"AMHGameState::AddPlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
+
+	if (HasAuthority())
+	{
+		// If the voice chat actor does not exist for the player, we spawn it
+		if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
+		{
+			// Does this player state have a voice chat actor ?
+			TArray<AActor*> FoundActors;
+			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AVoiceChat::StaticClass(), FoundActors);
+
+			bool AssociatedVoiceChatFound = false;
+			
+			for (AActor* Actor : FoundActors)
+			{
+				if (Actor)
+				{
+					if (AVoiceChat* VoiceChat = Cast<AVoiceChat>(Actor))
+					{
+						if (VoiceChat->AssociatedPlayerState == PlayerState)
+						{
+							// There is already
+							AssociatedVoiceChatFound = true;
+						}
+					}
+				}
+			}
+
+			// This player doesn't have a voice chat associated, so we spawn
+			if (!AssociatedVoiceChatFound)
+			{
+				// Set up spawn parameters (optional)
+				FActorSpawnParameters SpawnParams;
+				SpawnParams.Owner = this;
+				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+				// Set the spawn location and rotation
+				FVector SpawnLocation = FVector::ZeroVector;
+				FRotator SpawnRotation = FRotator::ZeroRotator;
+
+				// Spawn the actor
+				AVoiceChat* NewVoiceChat = GetWorld()->SpawnActor<AVoiceChat>(VoiceChatBlueprint, SpawnLocation, SpawnRotation, SpawnParams);
+				NewVoiceChat->AssociatedPlayerState = Cast<AMHPlayerState>(PlayerState);
+				// Give ownership of the actor the player
+				NewVoiceChat->SetOwner(PlayerState->GetPlayerController());
+				LL_DBG(this, "AMHGameState::AddPlayerState : Created a new voice chat actors because player is new");
+			}
+		}
+	}
 }
 
 void AMHGameState::RemovePlayerState(APlayerState* PlayerState)
