@@ -137,6 +137,9 @@ UE5Coro::TCoroutine<> AMHGameMode::SetupVoiceChatCoroutine(AMHPlayerController* 
 	AVoiceChat* NewVoiceChat = GetWorld()->SpawnActor<AVoiceChat>(VoiceChatBlueprint, SpawnLocation, SpawnRotation, SpawnParams);
 	AMHPlayerState* PlayerStateToAssociate = Cast<AMHPlayerState>(PlayerController->PlayerState);
 	NewVoiceChat->AssociatedPlayerState = PlayerStateToAssociate;
+
+	// Give the ownership of the voice chat actor to the player controller
+	NewVoiceChat->SetOwner(PlayerController);
 }
 
 void AMHGameMode::RespawnPlayerCharacter(AController* Controller)

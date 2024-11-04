@@ -60,6 +60,12 @@ void AVoiceChat::Tick(float DeltaSeconds)
 	}
 }
 
+void AVoiceChat::Destroyed()
+{
+	Super::Destroyed();
+	LL_DBG(this, "AVoiceChat::Destroyed : Destroying voice chat actor with Odin ID {0}", OdinID);
+}
+
 void AVoiceChat::OnRep_OdinID()
 {
 	LL_DBG(this, "AVoiceChat::OnRep_OdinID is {0}", OdinID);
