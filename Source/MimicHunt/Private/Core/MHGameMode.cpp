@@ -96,7 +96,7 @@ void AMHGameMode::PostLogin(APlayerController* NewPlayer)
 {
 	Super::PostLogin(NewPlayer);
 	LL_DBG(this, "AMHGameMode::PostLogin : Login called");
-	SetupVoiceChatCoroutine(Cast<AMHPlayerController>(NewPlayer));
+	if (bSetupVoiceChatOnLogin) SetupVoiceChatCoroutine(Cast<AMHPlayerController>(NewPlayer));
 }
 
 void AMHGameMode::Logout(AController* Exiting)

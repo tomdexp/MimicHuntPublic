@@ -14,4 +14,6 @@ UCLASS()
 class MIMICHUNT_API AMHMainMenuGameMode : public AMHGameMode
 {
 	GENERATED_BODY()
+	
+	AMHMainMenuGameMode();
 };

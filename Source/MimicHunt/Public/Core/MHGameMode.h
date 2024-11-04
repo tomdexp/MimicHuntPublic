@@ -37,4 +37,7 @@ public:
 
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMHPlayerCharacter> PlayerCharacterClass;
+
+	UPROPERTY()
+	bool bSetupVoiceChatOnLogin = true;
 };
