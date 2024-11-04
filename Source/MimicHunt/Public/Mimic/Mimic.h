@@ -51,6 +51,13 @@ public:
 	void MimicWake();
 	UFUNCTION(BlueprintCallable,Category="Mimic")
 	void MimicSleep();
+
+	UFUNCTION(BlueprintImplementableEvent, Category = "Mimic")
+	void OnMimicBirthEvent();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Mimic")
+	void OnMimicWakeEvent();
+	UFUNCTION(BlueprintImplementableEvent, Category = "Mimic")
+	void OnMimicSleepEvent();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -64,7 +71,7 @@ protected:
 
 	UFUNCTION()
 	void OnRep_IsAwake();
-	UPROPERTY(ReplicatedUsing=OnRep_IsAwake)
+	UPROPERTY(BlueprintReadOnly,ReplicatedUsing=OnRep_IsAwake)
 	bool IsAwake;
 public:
 	// Called every frame

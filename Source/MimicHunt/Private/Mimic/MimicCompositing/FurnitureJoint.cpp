@@ -105,11 +105,11 @@ void UFurnitureJoint::BeginDestroy()
 
 	if(_startConstraintComponent!=nullptr)
 	{
-		_startConstraintComponent->TermComponentConstraint();
+		_startConstraintComponent->BreakConstraint();
 	}
 	if(_endConstraintComponent!=nullptr)
 	{
-		_endConstraintComponent->TermComponentConstraint();
+		_endConstraintComponent->BreakConstraint();
 	}
 }
 
@@ -134,6 +134,21 @@ void UFurnitureJoint::InitializeJoint()
 		ChooseRandomOrgan();
 	}
 	
+	if(ChildChunkComponent!=nullptr && ParentChunkComponent!=nullptr)
+	{
+		ChildChunkComponent->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
+	}
+
+	if (ChildChunkComponent->GetAttachParent() == ParentChunkComponent)
+	{
+		UE_LOG(LogTemp, Log, TEXT("%s is correctly attached to %s."),*ChildChunkComponent->GetName(),*ParentChunkComponent->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attachment failed."));
+	}
+	
+	
 	if(ChosenRandomOrgan==nullptr) return;
 	SetChildActorClass(ChosenRandomOrgan);
 	Organ=Cast<AMimicOrgan>(GetChildActor());
@@ -144,21 +159,7 @@ void UFurnitureJoint::InitializeJoint()
 		_childChunkCachedRelativeTransform=ChildChunkComponent->GetRelativeTransform();
 		_childChunkCachedParent=ChildChunkComponent->GetAttachParent();
 	}
-	if(ChildChunkComponent!=nullptr && ParentChunkComponent!=nullptr)
-	{
-		ChildChunkComponent->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
-	}
-
-
-
-	if (ChildChunkComponent->GetAttachParent() == ParentChunkComponent)
-	{
-		UE_LOG(LogTemp, Log, TEXT("%s is correctly attached to %s."),*ChildChunkComponent->GetName(),*ParentChunkComponent->GetName());
-	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Attachment failed."));
-	}
+	
 	OnMimicSleep();
 }
 
@@ -279,11 +280,13 @@ void UFurnitureJoint::OnMimicSleep()
 	
 	if(_startConstraintComponent!=nullptr)
 	{
+		_startConstraintComponent->BreakConstraint();
 		_startConstraintComponent->DestroyComponent();
 		_startConstraintComponent=nullptr;
 	}
 	if(_endConstraintComponent!=nullptr)
 	{
+		_endConstraintComponent->BreakConstraint();
 		_endConstraintComponent->DestroyComponent();
 		_endConstraintComponent=nullptr;
 	}

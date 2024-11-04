@@ -87,6 +87,7 @@ void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 
 void AMimic::MimicBirth()
 {
+	OnMimicBirthEvent();
 	OnMimicBirthDelegate.Broadcast();
 	if(!HasAuthority())
 	{
@@ -105,6 +106,7 @@ void AMimic::MimicBirth()
 void AMimic::MimicWake()
 {
 	OnMimicWakeDelegate.Broadcast();
+	OnMimicWakeEvent();
 	if(!HasAuthority()) return;
 	IsAwake=true;
 }
@@ -112,6 +114,7 @@ void AMimic::MimicWake()
 void AMimic::MimicSleep()
 {
 	OnMimicSleepDelegate.Broadcast();
+	OnMimicSleepEvent();
 	if(!HasAuthority()) return;
 	IsAwake=false;
 }
