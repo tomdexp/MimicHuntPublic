@@ -9,6 +9,12 @@
 
 class AMHPlayerState;
 
+/*
+ * VoiceChat is the class that represents a player's voice chat. It is responsible for managing the player's voice chat input and output.
+ * This actor is replicated to all clients and the server.
+ * So every instance of the game has as many voice chat actors as there are players.
+ * It's persistent between server travels with MHGameMode::GetSeamlessTravelActorList()
+ */
 UCLASS()
 class MIMICHUNT_API AVoiceChat : public AActor
 {

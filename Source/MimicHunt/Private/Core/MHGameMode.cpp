@@ -7,6 +7,7 @@
 #include "GameFramework/SpectatorPawn.h"
 #include "Utils/LLog.h"
 #include "Networking/PersistentDataManager.h"
+#include "Audio/VoiceChat.h"
 
 class AMHGameState;
 
@@ -20,8 +21,15 @@ AMHGameMode::AMHGameMode()
 void AMHGameMode::GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>& ActorList)
 {
 	Super::GetSeamlessTravelActorList(bToTransition, ActorList);
-	
+
+	// Add the PersistentDataManager to the list of actors that will be transferred
 	ActorList.Add(PersistentDataManager);
+
+	// Find all actors of type AVoiceChat and add them to the list of actors that will be transferred
+	for (TActorIterator<AVoiceChat> It(GetWorld()); It; ++It)
+	{
+		ActorList.Add(*It);
+	}
 }
 
 void AMHGameMode::InitGameState()
