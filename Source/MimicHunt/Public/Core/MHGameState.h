@@ -3,6 +3,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/GameStateBase.h"
 #include "Networking/PersistentDataManager.h"
+#include "UE5Coro.h"
 #include "MHGameState.generated.h"
 
 class AVoiceChat;
@@ -27,6 +28,7 @@ public:
 	AMHGameState();
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<AVoiceChat> VoiceChatBlueprint;
@@ -55,6 +57,8 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
+
+	UE5Coro::TCoroutine<> SetupVoiceChatForPlayerStateCoroutine(APlayerState* PlayerState);
 
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Online")
 	int32 VoiceRoomId = -1;

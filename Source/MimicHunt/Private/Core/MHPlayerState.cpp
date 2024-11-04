@@ -56,6 +56,17 @@ void AMHPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLi
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHPlayerState, CurrentPlayerLifeType);
+	DOREPLIFETIME(AMHPlayerState, OdinID);
+}
+
+void AMHPlayerState::CopyProperties(APlayerState* PlayerState)
+{
+	Super::CopyProperties(PlayerState);
+	if (AMHPlayerState* NewPlayerState = Cast<AMHPlayerState>(PlayerState))
+	{
+		LL_DBG(this, "AMHPlayerState::CopyProperties : Persisting OdinID ({0}) for PlayerState ({1})", OdinID, PlayerState->GetPlayerName());
+		NewPlayerState->OdinID = OdinID;
+	}
 }
 
 float AMHPlayerState::GetHealth() const
@@ -88,4 +99,9 @@ void AMHPlayerState::MaxHealthChanged(const FOnAttributeChangeData& Data)
 bool AMHPlayerState::IsAlive() const
 {
 	return GetHealth() > 0.0f;
+}
+
+void AMHPlayerState::OnRep_OdinID()
+{
+	LL_DBG(this, "AMHPlayerState::OnRep_OdinID OdinID: {0}", OdinID);
 }

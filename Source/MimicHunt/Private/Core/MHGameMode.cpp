@@ -8,6 +8,8 @@
 #include "Utils/LLog.h"
 #include "Networking/PersistentDataManager.h"
 #include "Audio/VoiceChat.h"
+#include "Core/MHGameInstance.h"
+#include "Core/MHPlayerState.h"
 
 class AMHGameState;
 
@@ -25,10 +27,15 @@ void AMHGameMode::GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>
 	// Add the PersistentDataManager to the list of actors that will be transferred
 	ActorList.Add(PersistentDataManager);
 
-	// Find all actors of type AVoiceChat and add them to the list of actors that will be transferred
+	// Iterate through all AVoiceChat actors in the current world and add them to the list
 	for (TActorIterator<AVoiceChat> It(GetWorld()); It; ++It)
 	{
-		ActorList.Add(*It);
+		AVoiceChat* VoiceChatActor = *It;
+		if (VoiceChatActor && VoiceChatActor->IsValidLowLevel())
+		{
+			ActorList.Add(VoiceChatActor);
+			LL_DBG(this, "AMHGameMode::GetSeamlessTravelActorList : Added VoiceChat actor with OdinID ({0}) to the list", VoiceChatActor->OdinID);
+		}
 	}
 }
 
@@ -82,6 +89,48 @@ void AMHGameMode::PlayerCharacterDied(AController* Controller)
 bool AMHGameMode::AllowCheats(APlayerController* P)
 {
 	return true;
+}
+
+// ONLY CALLED ON SERVER
+void AMHGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+	LL_DBG(this, "AMHGameMode::PostLogin : Login called");
+	SetupVoiceChatCoroutine(Cast<AMHPlayerController>(NewPlayer));
+}
+
+UE5Coro::TCoroutine<> AMHGameMode::SetupVoiceChatCoroutine(AMHPlayerController* PlayerController)
+{
+	// Since PostLogin is called only 1 time per player when they connect
+	// We can safely assume 1 voice chat actor per player
+
+	if (!PlayerController)
+	{
+		LL_ERR(this, "AMHGameMode::SetupVoiceChatCoroutine : PlayerController is nullptr");
+		co_return;
+	}
+
+	while (!PlayerController->PlayerState)
+	{
+		LL_DBG(this, "AMHGameMode::SetupVoiceChatCoroutine : Waiting for PlayerState to be set...");
+		co_await UE5Coro::Latent::NextTick();
+		LL_DBG(this, "AMHGameMode::SetupVoiceChatCoroutine : PlayerState is set");
+	}
+	
+	LL_DBG(this, "AMHGameMode::SetupVoiceChatCoroutine : Spawning voice chat actor for player ({0})", PlayerController->PlayerState->GetPlayerName());
+	// Set up spawn parameters
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
+	// Set the spawn location and rotation
+	FVector SpawnLocation = FVector::ZeroVector;
+	FRotator SpawnRotation = FRotator::ZeroRotator;
+
+	// Spawn the actor
+	AVoiceChat* NewVoiceChat = GetWorld()->SpawnActor<AVoiceChat>(VoiceChatBlueprint, SpawnLocation, SpawnRotation, SpawnParams);
+	AMHPlayerState* PlayerStateToAssociate = Cast<AMHPlayerState>(PlayerController->PlayerState);
+	NewVoiceChat->AssociatedPlayerState = PlayerStateToAssociate;
 }
 
 void AMHGameMode::RespawnPlayerCharacter(AController* Controller)

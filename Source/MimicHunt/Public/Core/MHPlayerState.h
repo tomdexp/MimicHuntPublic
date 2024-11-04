@@ -47,6 +47,7 @@ public:
 	UMHAttributeSetPlayer* GetAttributeSetPlayer() const;
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
+	virtual void CopyProperties(APlayerState* PlayerState) override;
 
 	FGameplayTag DeadTag;
 	
@@ -62,4 +63,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	bool IsAlive() const;
 
+	// This is set by the server when a BP_VoiceChat actor is spawned for this player state
+	// It's used on seamless travel to re-associate the player state with the voice chat actor
+	// It's also copied in CopyProperties
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, ReplicatedUsing = OnRep_OdinID)
+	FGuid OdinID;
+
+	UFUNCTION()
+	void OnRep_OdinID();
 };

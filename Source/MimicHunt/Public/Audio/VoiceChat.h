@@ -25,15 +25,17 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 
 	virtual void BeginPlay() override;
+	virtual void Tick(float DeltaSeconds) override;
 
-	UPROPERTY(BlueprintReadWrite, VisibleAnywhere, ReplicatedUsing = OnRep_OdinID)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, ReplicatedUsing = OnRep_OdinID)
 	FGuid OdinID;
 
 	UFUNCTION()
 	void OnRep_OdinID();
 
+	// We use a Weak pointer to avoid preventing the deletion of the player state between seamless travels.
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "VoiceChat", ReplicatedUsing=OnRep_AssociatedPlayerState)
-	TObjectPtr<AMHPlayerState> AssociatedPlayerState;
+	TWeakObjectPtr<AMHPlayerState> AssociatedPlayerState;
 
 	UFUNCTION()
 	void OnRep_AssociatedPlayerState();
@@ -52,4 +54,6 @@ public:
 
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReadyToInitOdin_BP();
+
+	UE5Coro::TCoroutine<> AssociatePlayerStateOdinIDCoroutine();
 };

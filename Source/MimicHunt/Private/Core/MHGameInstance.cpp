@@ -9,6 +9,12 @@ void UMHGameInstance::Init()
 	AutoLogin();
 }
 
+bool UMHGameInstance::IsTransitionScene()
+{
+	// Our transition scene is named "L_Transition"
+	return GetWorld()->GetMapName().Contains("Transition");
+}
+
 void UMHGameInstance::AutoLogin()
 {
 	// If we are in editor, we auto-login using hard-coded credentials
