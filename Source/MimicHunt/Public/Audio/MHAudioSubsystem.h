@@ -35,4 +35,7 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Audio")
 	void CleanRoomId();
+
+	UPROPERTY(BlueprintReadWrite, Category = "Audio|VoiceChat")
+	bool bIsInSpectatorVoiceChat = false;
 };
