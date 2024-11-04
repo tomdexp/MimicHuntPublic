@@ -28,6 +28,7 @@ public:
 	virtual void PlayerCharacterDied(AController* Controller);
 	virtual bool AllowCheats(APlayerController* P) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void Logout(AController* Exiting) override;
 	
 	UPROPERTY(Transient)
 	TObjectPtr<class APersistentDataManager> PersistentDataManager;

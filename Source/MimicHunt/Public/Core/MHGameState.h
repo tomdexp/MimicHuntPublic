@@ -29,9 +29,6 @@ public:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaSeconds) override;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<AVoiceChat> VoiceChatBlueprint;
 	
 	UFUNCTION(BlueprintCallable , Category = "Online")
 	void SetOnlineState(EOnlineState NewOnlineState);
@@ -57,9 +54,7 @@ public:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
-
-	UE5Coro::TCoroutine<> SetupVoiceChatForPlayerStateCoroutine(APlayerState* PlayerState);
-
+	
 	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Online")
 	int32 VoiceRoomId = -1;
 };

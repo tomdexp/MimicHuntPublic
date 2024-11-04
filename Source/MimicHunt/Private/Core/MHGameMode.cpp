@@ -99,6 +99,12 @@ void AMHGameMode::PostLogin(APlayerController* NewPlayer)
 	SetupVoiceChatCoroutine(Cast<AMHPlayerController>(NewPlayer));
 }
 
+void AMHGameMode::Logout(AController* Exiting)
+{
+	Super::Logout(Exiting);
+	// TODO : Handle player logout by destroying the voice chat actor associated with the player
+}
+
 UE5Coro::TCoroutine<> AMHGameMode::SetupVoiceChatCoroutine(AMHPlayerController* PlayerController)
 {
 	// Since PostLogin is called only 1 time per player when they connect
