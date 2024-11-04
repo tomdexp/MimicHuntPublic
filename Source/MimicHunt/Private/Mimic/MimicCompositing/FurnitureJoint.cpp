@@ -7,6 +7,9 @@
 #include "Mimic/MimicCompositing/MimicOrgan.h"
 #include "Mimic/MimicCompositing/OrganBundle.h"
 #include "PhysicsEngine/PhysicsConstraintComponent.h"
+#if UE_EDITOR
+#include "DrawDebugHelpers.h"
+#endif
 
 // Sets default values for this component's properties
 UFurnitureJoint::UFurnitureJoint()
@@ -96,6 +99,20 @@ void UFurnitureJoint::OnMimicChoseOrgans(const FChosenOrgansList& chosenOrgansLi
 	InitializeJoint();
 }
 
+void UFurnitureJoint::BeginDestroy()
+{
+	Super::BeginDestroy();
+
+	if(_startConstraintComponent!=nullptr)
+	{
+		_startConstraintComponent->TermComponentConstraint();
+	}
+	if(_endConstraintComponent!=nullptr)
+	{
+		_endConstraintComponent->TermComponentConstraint();
+	}
+}
+
 void UFurnitureJoint::InitializeJoint()
 {
 	//Compute the start to end direction on mimic birth, because calculating it on wake would make it altered by the shifting around of the wake up of the previous joints
@@ -126,6 +143,21 @@ void UFurnitureJoint::InitializeJoint()
 	{
 		_childChunkCachedRelativeTransform=ChildChunkComponent->GetRelativeTransform();
 		_childChunkCachedParent=ChildChunkComponent->GetAttachParent();
+	}
+	if(ChildChunkComponent!=nullptr && ParentChunkComponent!=nullptr)
+	{
+		ChildChunkComponent->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
+	}
+
+
+
+	if (ChildChunkComponent->GetAttachParent() == ParentChunkComponent)
+	{
+		UE_LOG(LogTemp, Log, TEXT("%s is correctly attached to %s."),*ChildChunkComponent->GetName(),*ParentChunkComponent->GetName());
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Attachment failed."));
 	}
 	OnMimicSleep();
 }
@@ -159,8 +191,13 @@ void UFurnitureJoint::OnMimicWake()
 	{
 		//Align the angle of the organ with the angle of the joints (regarding the direction of their Start attachment to end attachment vector)
 		FVector organStartToEnd=Organ->EndAttachPoint->GetComponentLocation()-Organ->StartAttachPoint->GetComponentLocation();
-	
-		FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,StartToEndVector).Rotator();
+		FVector targetDirection=StartToEndVector;
+		if(ManuallySetJointDirection)
+		{
+			targetDirection=ManualJointDirection;
+		}
+		
+		FRotator lookAtRotation = FQuat::FindBetweenVectors(organStartToEnd,targetDirection).Rotator();
 		Organ->GetRootComponent()->SetWorldRotation(lookAtRotation);
 		
 		//Place the organ and child component accordingly, making sure their attachment points match

@@ -36,6 +36,7 @@ public:
 	void OnMimicWake();
 	void OnMimicSleep();
 	void OnMimicChoseOrgans(const FChosenOrgansList& chosenOrgansList);
+	virtual void BeginDestroy() override;
 
 	UPROPERTY(BlueprintReadOnly)
 	AMimic* Mimic;
@@ -62,6 +63,13 @@ public:
 	UPROPERTY()
 	USceneComponent* EndAttachPoint=nullptr;
 
+	//If true, instead of orientating the organ from start to end, the vector will follow this direction
+	UPROPERTY(EditAnywhere)
+	bool ManuallySetJointDirection;
+	//This direction
+	UPROPERTY(EditAnywhere, meta=(EditCondition="ManuallySetJointDirection",EditConditionHides))
+	FVector ManualJointDirection=FVector::ZeroVector;
+	UPROPERTY()
 	FVector StartToEndVector=FVector::ZeroVector;
 
 	UPROPERTY()
