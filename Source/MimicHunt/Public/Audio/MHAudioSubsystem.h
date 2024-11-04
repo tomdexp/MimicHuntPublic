@@ -38,4 +38,7 @@ public:
 
 	UPROPERTY(BlueprintReadWrite, Category = "Audio|VoiceChat")
 	bool bIsInSpectatorVoiceChat = false;
+
+	UPROPERTY()
+	TArray<FGuid> OdinIDs;
 };

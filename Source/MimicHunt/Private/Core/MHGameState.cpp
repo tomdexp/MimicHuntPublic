@@ -3,6 +3,7 @@
 #include "OnlineSubsystem.h"
 #include "Audio/MHAudioSubsystem.h"
 #include "Audio/VoiceChat.h"
+#include "Audio/VoiceChatManager.h"
 #include "Core/MHGameInstance.h"
 #include "Core/MHPlayerState.h"
 #include "Kismet/GameplayStatics.h"
@@ -38,6 +39,11 @@ void AMHGameState::BeginPlay()
 				}
 			}
 		}
+		// Spawn the VoiceChatManager
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		GetWorld()->SpawnActor<AVoiceChatManager>(SpawnParams);
 	}
 }
 

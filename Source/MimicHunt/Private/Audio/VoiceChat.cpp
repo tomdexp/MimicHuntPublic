@@ -1,6 +1,7 @@
 #include "Audio/VoiceChat.h"
 
 #include "EngineUtils.h"
+#include "Audio/MHAudioSubsystem.h"
 #include "Core/MHGameInstance.h"
 #include "Core/MHPlayerState.h"
 #include "Net/UnrealNetwork.h"
@@ -32,6 +33,16 @@ void AVoiceChat::BeginPlay()
 	{
 		LL_DBG(this, "AVoiceChat::BeginPlay : This is the server, generating Odin ID for voice chat actor...");
 		OdinID = FGuid::NewGuid(); // This is replicated
+		// Get the MHAudioSubsystem
+		if (UMHAudioSubsystem* AudioSubsystem = GetGameInstance<UMHGameInstance>()->GetSubsystem<UMHAudioSubsystem>())
+		{
+			// Only add it if it's not already in the list
+			if (!AudioSubsystem->OdinIDs.Contains(OdinID))
+			{
+				LL_DBG(this, "AVoiceChat::BeginPlay : Adding Odin ID ({0}) to MHAudioSubsystem, because it was not already in it", OdinID);
+				AudioSubsystem->OdinIDs.Add(OdinID);
+			}
+		}
 		OnRep_OdinID();
 		AssociatePlayerStateOdinIDCoroutine();
 	}
