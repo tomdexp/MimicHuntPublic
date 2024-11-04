@@ -1,6 +1,7 @@
 #include "Audio/VoiceChat.h"
 
 #include "Core/MHGameInstance.h"
+#include "Core/MHPlayerState.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
 
@@ -39,6 +40,15 @@ void AVoiceChat::OnRep_OdinID()
 	{
 		LL_DBG(this, "AMHPlayerCharacter::OnRep_OdinID Adding Odin ID to IdsToPlayerVoiceChatActors");
 		GameInstance->IdsToPlayerVoiceChatActors.Add(OdinID, this);
+	}
+}
+
+void AVoiceChat::OnRep_AssociatedPlayerState()
+{
+	// Set the name of this actor to BP_VoiceChat_{PlayerName}
+	if (AssociatedPlayerState)
+	{
+		SetActorLabel(FString::Printf(TEXT("BP_VoiceChat_%s"), *AssociatedPlayerState->GetPlayerName()));
 	}
 }
 

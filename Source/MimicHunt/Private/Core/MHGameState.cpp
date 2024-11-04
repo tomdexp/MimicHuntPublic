@@ -80,7 +80,7 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 		{
 			// Does this player state have a voice chat actor ?
 			TArray<AActor*> FoundActors;
-			UGameplayStatics::GetAllActorsOfClass(GetWorld(), AVoiceChat::StaticClass(), FoundActors);
+			UGameplayStatics::GetAllActorsOfClass(GameInstance->GetWorld(), AVoiceChat::StaticClass(), FoundActors);
 
 			bool AssociatedVoiceChatFound = false;
 			
@@ -92,7 +92,8 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 					{
 						if (VoiceChat->AssociatedPlayerState == PlayerState)
 						{
-							// There is already
+							// There is already a voice chat actor associated with this player
+							LL_DBG(this,"AMHGameState::AddPlayerState : Found an associated voice chat actor for this player, will not spawn a new one");
 							AssociatedVoiceChatFound = true;
 						}
 					}
@@ -116,7 +117,7 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 				NewVoiceChat->AssociatedPlayerState = Cast<AMHPlayerState>(PlayerState);
 				// Give ownership of the actor the player
 				NewVoiceChat->SetOwner(PlayerState->GetPlayerController());
-				LL_DBG(this, "AMHGameState::AddPlayerState : Created a new voice chat actors because player is new");
+				LL_DBG(this, "AMHGameState::AddPlayerState : Created a new voice chat actors because player state is new");
 			}
 		}
 	}
@@ -125,8 +126,44 @@ void AMHGameState::AddPlayerState(APlayerState* PlayerState)
 void AMHGameState::RemovePlayerState(APlayerState* PlayerState)
 {
 	Super::RemovePlayerState(PlayerState);
-	LL_DBG(this,"AMHGameState::RemovePlayerState : There is now {0} players", PlayerArray.Num());
+	LL_DBG(this, "AMHGameState::RemovePlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
+
+	// Desspawn the voice chat actor associated with this player
+	if (HasAuthority())
+	{
+		// If the voice chat actor exists for the player, we destroy it
+		if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
+		{
+			// Does this player state have a voice chat actor ?
+			TArray<AActor*> FoundActors;
+			UGameplayStatics::GetAllActorsOfClass(GameInstance->GetWorld(), AVoiceChat::StaticClass(), FoundActors);
+
+			bool AssociatedVoiceChatFound = false;
+			
+			for (AActor* Actor : FoundActors)
+			{
+				if (Actor)
+				{
+					if (AVoiceChat* VoiceChat = Cast<AVoiceChat>(Actor))
+					{
+						if (VoiceChat->AssociatedPlayerState == PlayerState)
+						{
+							// There is already a voice chat actor associated with this player
+							LL_DBG(this,"AMHGameState::RemovePlayerState : Found an associated voice chat actor for this player, destroying it");
+							VoiceChat->Destroy();
+							AssociatedVoiceChatFound = true;
+						}
+					}
+				}
+			}
+
+			if (!AssociatedVoiceChatFound)
+			{
+				LL_DBG(this,"AMHGameState::RemovePlayerState : No voice chat actor found for this player");
+			}
+		}
+	}
 }
 
 

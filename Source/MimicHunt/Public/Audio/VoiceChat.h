@@ -32,8 +32,11 @@ public:
 	UFUNCTION()
 	void OnRep_OdinID();
 
-	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "VoiceChat", Replicated)
+	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "VoiceChat", ReplicatedUsing=OnRep_AssociatedPlayerState)
 	TObjectPtr<AMHPlayerState> AssociatedPlayerState;
+
+	UFUNCTION()
+	void OnRep_AssociatedPlayerState();
 
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, Category = "VoiceChat")
 	TObjectPtr<UAkOdinInputComponent> AkOdinInputComponent;
