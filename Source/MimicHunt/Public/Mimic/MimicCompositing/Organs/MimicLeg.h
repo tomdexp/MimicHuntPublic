@@ -25,6 +25,8 @@ protected:
 	//The rotation we apply to the leg on start based on its position relative to the mimic 
 	UPROPERTY(BlueprintReadOnly)
 	float _legStartAngle;
+	UFUNCTION(BlueprintImplementableEvent, Category = "Mimic")
+	void OnDeactivateLeg();
 public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

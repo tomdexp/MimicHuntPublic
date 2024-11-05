@@ -36,6 +36,7 @@ public:
 	UPROPERTY(EditAnywhere, Category="MimicOrgan|Physic", meta=(EditConditionHides,EditCondition="IsPhysicked"))
 	float Damping=5;
 protected:
+	virtual void OnConstruction(const FTransform& Transform) override;
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 	UFUNCTION(BlueprintImplementableEvent, Category = "MimicOrgan")

@@ -34,6 +34,7 @@ void AMimicLeg::OnMimicWake()
 
 void AMimicLeg::OnMimicSleep()
 {
+	OnDeactivateLeg();
 	Super::OnMimicSleep();
 }
 

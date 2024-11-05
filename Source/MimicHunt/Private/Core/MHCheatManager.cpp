@@ -75,7 +75,7 @@ void UMHCheatManager::BirthMimic()
         float SphereRadius = 50.0f;  // Adjust the radius as needed
 
         // Perform a sphere trace
-        if (GetWorld()->SweepSingleByChannel(HitResult, Location, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params))
+        if (GetWorld()->SweepSingleByProfile(HitResult, Location, End, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(SphereRadius), Params))
         {
             // Check if we hit an actor and print its name
             if (AActor* HitActor = HitResult.GetActor())
@@ -121,7 +121,7 @@ void UMHCheatManager::WakeMimic()
         float SphereRadius = 5.0f;  // Adjust the radius as needed
 
         // Perform a sphere trace
-        if (GetWorld()->SweepSingleByChannel(HitResult, Location, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params))
+        if (GetWorld()->SweepSingleByProfile(HitResult, Location, End, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(SphereRadius), Params))
         {
             // Check if we hit an actor and print its name
             if (AActor* HitActor = HitResult.GetActor())
@@ -167,7 +167,7 @@ void UMHCheatManager::SleepMimic()
         float SphereRadius = 5.0f;  // Adjust the radius as needed
 
         // Perform a sphere trace
-        if (GetWorld()->SweepSingleByChannel(HitResult, Location, End, FQuat::Identity, ECC_Visibility, FCollisionShape::MakeSphere(SphereRadius), Params))
+        if (GetWorld()->SweepSingleByProfile(HitResult, Location, End, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(SphereRadius), Params))
         {
             // Check if we hit an actor and print its name
             if (AActor* HitActor = HitResult.GetActor())

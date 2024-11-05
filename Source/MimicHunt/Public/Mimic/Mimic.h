@@ -3,7 +3,10 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "MHMimicCharacter.h"
+#include "Core/MHLivingBeing.h"
 #include "GameFramework/Actor.h"
+#include "GameFramework/Character.h"
 #include "Mimic.generated.h"
 
 DECLARE_MULTICAST_DELEGATE(FOnMimicBirth)
@@ -38,7 +41,7 @@ struct FChosenOrgansList
 };
 
 UCLASS()
-class MIMICHUNT_API AMimic : public AActor
+class MIMICHUNT_API AMimic : public AMHMimicCharacter
 {
 	GENERATED_BODY()
 
@@ -68,6 +71,10 @@ protected:
 	FChosenOrgansList ChosenOrgans;
 	//TempChosenOrgans isn't replicated, when the time is right, we copy it to chosen organs and it gets replicated
 	FChosenOrgansList TempChosenOrgans;
+	UPROPERTY()
+	int CachedCapsuleRadius;
+	UPROPERTY()
+	int CachedCapsuleHalfHeight;
 
 	UFUNCTION()
 	void OnRep_IsAwake();

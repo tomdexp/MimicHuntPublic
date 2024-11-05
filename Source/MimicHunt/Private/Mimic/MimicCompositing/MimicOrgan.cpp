@@ -14,6 +14,24 @@ AMimicOrgan::AMimicOrgan()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void AMimicOrgan::OnConstruction(const FTransform& Transform)
+{
+	Super::OnConstruction(Transform);
+	TSet<UActorComponent*> components=GetComponents();
+	for(auto component : components)
+	{
+		if(component->GetClass()!=UStaticMeshComponent::StaticClass()) continue;
+		auto staticMeshComponent =Cast<UStaticMeshComponent>(component);
+		
+		//This way legs won't step on furniture chunks
+		staticMeshComponent->SetCollisionResponseToChannel(ECC_Visibility, ECollisionResponse::ECR_Ignore);
+		//staticMeshComponent->SetCollisionResponseToChannel(ECC_Pawn, ECollisionResponse::ECR_Ignore);
+		//This way the capsule won't collide with the physicked part of the mimic
+		staticMeshComponent->SetCollisionObjectType(ECC_PhysicsBody);
+		staticMeshComponent->UpdateCollisionProfile();
+	}
+}
+
 // Called when the game starts or when spawned
 void AMimicOrgan::BeginPlay()
 {
