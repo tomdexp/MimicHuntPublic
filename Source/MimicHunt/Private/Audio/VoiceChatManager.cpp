@@ -46,5 +46,5 @@ void AVoiceChatManager::Tick(float DeltaSeconds)
 			ActiveCount++;
 		}
 	}
-	LL_DBG(this, "AVoiceChatManager::Tick : There is {0} controllers", ActiveCount);
+	//LL_DBG(this, "AVoiceChatManager::Tick : There is {0} controllers", ActiveCount);
 }

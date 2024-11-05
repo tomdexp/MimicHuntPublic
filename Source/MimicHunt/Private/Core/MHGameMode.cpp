@@ -28,15 +28,15 @@ void AMHGameMode::GetSeamlessTravelActorList(bool bToTransition, TArray<AActor*>
 	ActorList.Add(PersistentDataManager);
 
 	// Iterate through all AVoiceChat actors in the current world and add them to the list
-	// for (TActorIterator<AVoiceChat> It(GetWorld()); It; ++It)
-	// {
-	// 	AVoiceChat* VoiceChatActor = *It;
-	// 	if (VoiceChatActor && VoiceChatActor->IsValidLowLevel())
-	// 	{
-	// 		ActorList.Add(VoiceChatActor);
-	// 		LL_DBG(this, "AMHGameMode::GetSeamlessTravelActorList : Added VoiceChat actor with OdinID ({0}) to the list", VoiceChatActor->OdinID);
-	// 	}
-	// }
+	for (TActorIterator<AVoiceChat> It(GetWorld()); It; ++It)
+	{
+		AVoiceChat* VoiceChatActor = *It;
+		if (VoiceChatActor && VoiceChatActor->IsValidLowLevel())
+		{
+			ActorList.Add(VoiceChatActor);
+			LL_DBG(this, "AMHGameMode::GetSeamlessTravelActorList : Added VoiceChat actor with OdinID ({0}) to the list", VoiceChatActor->OdinID);
+		}
+	}
 }
 
 void AMHGameMode::InitGameState()
