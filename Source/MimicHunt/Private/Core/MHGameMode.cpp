@@ -68,17 +68,22 @@ void AMHGameMode::InitGameState()
 	{
 		LL_DBG(this, "AMHGameMode::InitGameState : PersistentDataManager was not found (maybe it not spawned yet which is normal then)");
 	}
-	
-	// Spawn the VoiceChatManager
-	LL_DBG(this, "AMHGameMode::InitGameState : Spawning VoiceChatManager...");
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = this;
-	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	VoiceChatManager = GetWorld()->SpawnActor<AVoiceChatManager>(SpawnParams);
-	VoiceChatManager->VoiceChatBlueprint = VoiceChatBlueprint;
-	LL_DBG(this, "AMHGameMode::InitGameState : VoiceChatManager spawned");
-	
-}
+
+	if (bSpawnVoiceChatManagerOnInitGameState)
+	{
+		// Spawn the VoiceChatManager
+		LL_DBG(this, "AMHGameMode::InitGameState : Spawning VoiceChatManager...");
+		FActorSpawnParameters SpawnParams;
+		SpawnParams.Owner = this;
+		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+		VoiceChatManager = GetWorld()->SpawnActor<AVoiceChatManager>(SpawnParams);
+		VoiceChatManager->VoiceChatBlueprint = VoiceChatBlueprint;
+		LL_DBG(this, "AMHGameMode::InitGameState : VoiceChatManager spawned");
+	}
+	else
+	{
+		LL_DBG(this, "AMHGameMode::InitGameState : bSpawnVoiceChatManagerOnInitGameState is false, not spawning VoiceChatManager");
+	}}
 
 void AMHGameMode::PlayerCharacterDied(AController* Controller)
 {
