@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "GameFramework/GameStateBase.h"
 #include "Networking/PersistentDataManager.h"
 #include "UE5Coro.h"
@@ -63,4 +64,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
 	FVoidCoroutine WaitForVoiceRoomOdinID(FLatentActionInfo LatentInfo);
+
+	UFUNCTION(BlueprintCallable, Category = "Online")
+	int32 GetAlivePlayerCount();
+
+	FGameplayTag DeadTag;
 };

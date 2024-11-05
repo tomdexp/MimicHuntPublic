@@ -17,6 +17,7 @@ AMHGameState::AMHGameState()
 {
 	CurrentOnlineState = Undefined;
 	PrimaryActorTick.bCanEverTick = true;
+	DeadTag = FGameplayTag::RequestGameplayTag("State.Dead");
 }
 
 void AMHGameState::BeginPlay()
@@ -106,5 +107,23 @@ FVoidCoroutine AMHGameState::WaitForVoiceRoomOdinID(FLatentActionInfo LatentInfo
 		co_await UE5Coro::Latent::NextTick();
 	}
 	co_return;
+}
+
+int32 AMHGameState::GetAlivePlayerCount()
+{
+	// Iterate through all player states and check for those who has no gameplay tag "State.Dead"
+	int32 AlivePlayerCount = 0;
+	for (APlayerState* PlayerState : PlayerArray)
+	{
+		if (AMHPlayerState* MHPlayerState = Cast<AMHPlayerState>(PlayerState))
+		{
+			if (MHPlayerState && MHPlayerState->GetAbilitySystemComponent() && !MHPlayerState->GetAbilitySystemComponent()->HasMatchingGameplayTag(DeadTag))
+			{
+				AlivePlayerCount++;
+			}
+
+		}
+	}
+	return AlivePlayerCount;
 }
 
