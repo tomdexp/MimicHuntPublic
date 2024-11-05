@@ -17,12 +17,12 @@ void AMHLobbyGameMode::PreInitializeComponents()
 		if (DataManager)
 		{
 			PersistentDataManager = DataManager;
-			LL_DBG(this, "Found PersistentDataManager, reassigning it");
+			LL_DBG(this, "AMHLobbyGameMode::PreInitializeComponents : Found PersistentDataManager, reassigning it");
 			return;
 		}
 	}
 
-	LL_DBG(this, "Spawning PersistentDataManager because it was not found");
+	LL_DBG(this, "AMHLobbyGameMode::PreInitializeComponents : Spawning PersistentDataManager because it was not found");
 
 	FActorSpawnParameters SpawnInfo;
 	SpawnInfo.Instigator = GetInstigator();
@@ -32,7 +32,7 @@ void AMHLobbyGameMode::PreInitializeComponents()
 	PersistentDataManager = World->SpawnActor<APersistentDataManager>(APersistentDataManager::StaticClass(), SpawnInfo);
 	if (!PersistentDataManager)
 	{
-		LL_ERR(this, "Failed to spawn PersistentDataManager");
+		LL_ERR(this, "AMHLobbyGameMode::PreInitializeComponents : Failed to spawn PersistentDataManager");
 	}
 	else
 	{

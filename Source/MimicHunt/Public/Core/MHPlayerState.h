@@ -63,8 +63,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Player")
 	bool IsAlive() const;
 
-	// This is set by the server when a BP_VoiceChat actor is spawned for this player state
-	// It's used on seamless travel to re-associate the player state with the voice chat actor
+	// This is set by the server the first time the player logs in
+	// It's used to re-associate the player with the voice chat actor in the VoiceChatManager
 	// It's also copied in CopyProperties
 	UPROPERTY(BlueprintReadOnly, VisibleAnywhere, ReplicatedUsing = OnRep_OdinID)
 	FGuid OdinID;

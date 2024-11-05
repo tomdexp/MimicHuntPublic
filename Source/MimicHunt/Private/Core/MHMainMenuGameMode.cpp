@@ -2,5 +2,5 @@
 
 AMHMainMenuGameMode::AMHMainMenuGameMode()
 {
-	bSetupVoiceChatOnLogin = false;
+	bSpawnVoiceChatManagerOnInitGameState = false;
 }

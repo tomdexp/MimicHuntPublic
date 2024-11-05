@@ -23,7 +23,6 @@ AMHGameState::AMHGameState()
 void AMHGameState::BeginPlay()
 {
 	Super::BeginPlay();
-
 	if (HasAuthority()) // Only the server should generate the room id
 	{
 		if (UWorld* World = GetWorld()) // Get the MHAudioSubsystem via the World
@@ -39,11 +38,6 @@ void AMHGameState::BeginPlay()
 				}
 			}
 		}
-		// Spawn the VoiceChatManager
-		FActorSpawnParameters SpawnParams;
-		SpawnParams.Owner = this;
-		SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-		GetWorld()->SpawnActor<AVoiceChatManager>(SpawnParams);
 	}
 }
 

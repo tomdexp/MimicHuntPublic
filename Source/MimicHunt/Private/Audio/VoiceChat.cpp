@@ -28,24 +28,6 @@ void AVoiceChat::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& Out
 void AVoiceChat::BeginPlay()
 {
 	Super::BeginPlay();
-	
-	if (HasAuthority())
-	{
-		LL_DBG(this, "AVoiceChat::BeginPlay : This is the server, generating Odin ID for voice chat actor...");
-		OdinID = FGuid::NewGuid(); // This is replicated
-		// Get the MHAudioSubsystem
-		if (UMHAudioSubsystem* AudioSubsystem = GetGameInstance<UMHGameInstance>()->GetSubsystem<UMHAudioSubsystem>())
-		{
-			// Only add it if it's not already in the list
-			if (!AudioSubsystem->OdinIDs.Contains(OdinID))
-			{
-				LL_DBG(this, "AVoiceChat::BeginPlay : Adding Odin ID ({0}) to MHAudioSubsystem, because it was not already in it", OdinID);
-				AudioSubsystem->OdinIDs.Add(OdinID);
-			}
-		}
-		OnRep_OdinID();
-		AssociatePlayerStateOdinIDCoroutine();
-	}
 }
 
 void AVoiceChat::Tick(float DeltaSeconds)
@@ -75,6 +57,11 @@ void AVoiceChat::Destroyed()
 {
 	Super::Destroyed();
 	LL_DBG(this, "AVoiceChat::Destroyed : Destroying voice chat actor with Odin ID {0}", OdinID);
+	if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
+	{
+		LL_DBG(this, "AVoiceChat::Destroyed : Removing Odin ID ({0}) from IdsToPlayerVoiceChatActors", OdinID);
+		GameInstance->IdsToPlayerVoiceChatActors.Remove(OdinID);
+	}
 }
 
 void AVoiceChat::OnRep_OdinID()
@@ -82,19 +69,18 @@ void AVoiceChat::OnRep_OdinID()
 	LL_DBG(this, "AVoiceChat::OnRep_OdinID is {0}", OdinID);
 	if (UMHGameInstance* GameInstance = GetGameInstance<UMHGameInstance>())
 	{
-		LL_DBG(this, "AVoiceChat::OnRep_OdinID Adding Odin ID to IdsToPlayerVoiceChatActors");
+		LL_DBG(this, "AVoiceChat::OnRep_OdinID Adding Odin ID ({0}) to IdsToPlayerVoiceChatActors", OdinID);
 		GameInstance->IdsToPlayerVoiceChatActors.Add(OdinID, this);
 	}
 }
 
 void AVoiceChat::OnRep_AssociatedPlayerState()
 {
+	LL_DBG(this, "AVoiceChat::OnRep_AssociatedPlayerState is {0}", *AssociatedPlayerState->GetPlayerName());
 	if (AssociatedPlayerState.IsValid())
 	{
 		// Set the name of this actor to BP_VoiceChat_{PlayerName}
 		SetActorLabel(FString::Printf(TEXT("BP_VoiceChat_%s"), *AssociatedPlayerState->GetPlayerName()));
-		// Associate this actor Odin ID with the player state's Odin ID
-		AssociatedPlayerState->OdinID = OdinID;
 	}
 }
 
@@ -116,29 +102,15 @@ FVoidCoroutine AVoiceChat::WaitForAssociatedPlayerState(FLatentActionInfo Latent
 	co_return;
 }
 
-UE5Coro::TCoroutine<> AVoiceChat::AssociatePlayerStateOdinIDCoroutine()
+FVoidCoroutine AVoiceChat::WaitForPawn(FLatentActionInfo LatentInfo)
 {
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : Waiting for Odin ID to be set...");
-	while (OdinID == FGuid())
+	while (!AssociatedPlayerState.IsValid() || !AssociatedPlayerState->GetPawn())
 	{
 		co_await UE5Coro::Latent::NextTick();
 	}
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : Odin ID is {0}", OdinID);
-
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : Waiting for AssociatedPlayerState to be set...");
-	while (!AssociatedPlayerState.IsValid())
-	{
-		co_await UE5Coro::Latent::NextTick();
-	}
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : AssociatedPlayerState is {0}", *AssociatedPlayerState->GetPlayerName());
-	
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : Associating PlayerState Odin ID to Voice Chat Actor Odin ID ({0}) for AssociatedPlayerState ({1})...", OdinID, *AssociatedPlayerState->GetPlayerName());
-	AssociatedPlayerState->OdinID = OdinID;
-	AssociatedPlayerState->OnRep_OdinID();
-	LL_DBG(this, "AVoiceChat::AssociatePlayerStateOdinIDCoroutine : Done associating Odin ID ({0}) with AssociatedPlayerState ({1})", OdinID, *AssociatedPlayerState->GetPlayerName());
-
 	co_return;
 }
+
 
 void AVoiceChat::OnReadyToInitOdin_BP_Implementation()
 {

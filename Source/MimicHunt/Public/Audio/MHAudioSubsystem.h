@@ -29,6 +29,9 @@ public:
 
 	UFUNCTION(BlueprintCallable, Category = "Audio|Odin")
 	void StartupOdin();
+	
+	void PlayerOdinIDCreated(FGuid Guid);
+	void PlayerOdinIDDestroyed(FGuid Guid);
 
 	UPROPERTY()
 	int32 VoiceRoomId = -1;
@@ -41,4 +44,7 @@ public:
 
 	UPROPERTY()
 	TArray<FGuid> OdinIDs;
+
+	UPROPERTY()
+	int32 NumberOfConnectedPlayers = 0;
 };

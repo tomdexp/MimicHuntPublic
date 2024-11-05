@@ -53,8 +53,9 @@ public:
 	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
 	FVoidCoroutine WaitForAssociatedPlayerState(FLatentActionInfo LatentInfo);
 
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForPawn(FLatentActionInfo LatentInfo);
+
 	UFUNCTION(BlueprintNativeEvent)
 	void OnReadyToInitOdin_BP();
-
-	UE5Coro::TCoroutine<> AssociatePlayerStateOdinIDCoroutine();
 };

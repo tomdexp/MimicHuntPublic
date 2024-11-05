@@ -37,6 +37,20 @@ void UMHAudioSubsystem::StartupOdin()
 	odin_startup(ODIN_VERSION);
 }
 
+void UMHAudioSubsystem::PlayerOdinIDCreated(FGuid Guid)
+{
+	LL_DBG(this, "UMHAudioSubsystem::PlayerOdinIDCreated : PlayerOdinIDCreated : {0}", Guid.ToString());
+	OdinIDs.Add(Guid);
+	NumberOfConnectedPlayers++;
+}
+
+void UMHAudioSubsystem::PlayerOdinIDDestroyed(FGuid Guid)
+{
+	LL_DBG(this, "UMHAudioSubsystem::PlayerOdinIDDestroyed : PlayerOdinIDDestroyed : {0}", Guid.ToString());
+	OdinIDs.Remove(Guid);
+	NumberOfConnectedPlayers--;
+}
+
 void UMHAudioSubsystem::CleanRoomId()
 {
 	if (VoiceRoomId == -1)

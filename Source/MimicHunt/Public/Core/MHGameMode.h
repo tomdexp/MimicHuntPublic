@@ -7,6 +7,7 @@
 #include "Audio/VoiceChat.h"
 #include "MHGameMode.generated.h"
 
+class AVoiceChatManager;
 class AMHPlayerCharacter;
 /**
  * This is the GameMode inherited by all the GameMode of the game
@@ -32,12 +33,14 @@ public:
 	
 	UPROPERTY(Transient)
 	TObjectPtr<class APersistentDataManager> PersistentDataManager;
-
-	UE5Coro::TCoroutine<> SetupVoiceChatCoroutine(AMHPlayerController* PlayerController);
-
+	
 	UPROPERTY(EditDefaultsOnly)
 	TSubclassOf<AMHPlayerCharacter> PlayerCharacterClass;
 
+	// We use a WeakObjectPtr to ensure that the VoiceChatManager is not kept a reference to when it's destroyed
 	UPROPERTY()
-	bool bSetupVoiceChatOnLogin = true;
+	TWeakObjectPtr<AVoiceChatManager> VoiceChatManager;
+
+	UPROPERTY()
+	bool bSpawnVoiceChatManagerOnInitGameState = true;
 };
