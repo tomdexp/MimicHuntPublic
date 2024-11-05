@@ -97,7 +97,7 @@ void AMHGameMode::PlayerCharacterDied(AController* Controller)
 	FTimerHandle RespawnTimerHandle;
 
 	FTimerDelegate RespawnDelegate = FTimerDelegate::CreateUObject(this, &AMHGameMode::RespawnPlayerCharacter,Controller);
-	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, 5, false);
+	GetWorldTimerManager().SetTimer(RespawnTimerHandle, RespawnDelegate, 10, false);
 
 	AMHPlayerController* PC = Cast<AMHPlayerController>(Controller);
 	if (PC)

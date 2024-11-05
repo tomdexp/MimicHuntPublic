@@ -16,29 +16,12 @@ LL_FILE_CVAR(MHBaseGameState);
 AMHGameState::AMHGameState()
 {
 	CurrentOnlineState = Undefined;
-	VoiceRoomId = -1;
 	PrimaryActorTick.bCanEverTick = true;
 }
 
 void AMHGameState::BeginPlay()
 {
 	Super::BeginPlay();
-	if (HasAuthority()) // Only the server should generate the room id
-	{
-		if (UWorld* World = GetWorld()) // Get the MHAudioSubsystem via the World
-		{
-			if (UMHAudioSubsystem* AudioSubsystem = World->GetGameInstance()->GetSubsystem<UMHAudioSubsystem>())
-			{
-				if (AudioSubsystem->VoiceRoomId == -1) // There was no room id set (first time)
-				{
-					// Create a random 9 digits int
-					VoiceRoomId = FMath::RandRange(100000000, 999999999);
-					AudioSubsystem->VoiceRoomId = VoiceRoomId;
-					LL_DBG(this,"AMHGameState::BeginPlay : VoiceRoomId was -1, set to {0}", VoiceRoomId);
-				}
-			}
-		}
-	}
 }
 
 void AMHGameState::Tick(float DeltaSeconds)
@@ -87,7 +70,7 @@ void AMHGameState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLife
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 	DOREPLIFETIME(AMHGameState, CurrentOnlineState);
-	DOREPLIFETIME(AMHGameState, VoiceRoomId);
+	DOREPLIFETIME(AMHGameState, VoiceRoomOdinID);
 }
 
 void AMHGameState::AddPlayerState(APlayerState* PlayerState)
@@ -107,5 +90,21 @@ void AMHGameState::RemovePlayerState(APlayerState* PlayerState)
 	Super::RemovePlayerState(PlayerState);
 	LL_DBG(this, "AMHGameState::RemovePlayerState : There is now {0} players", PlayerArray.Num());
 	OnPlayerCountChanged.Broadcast(PlayerArray.Num());
+}
+
+void AMHGameState::OnRep_VoiceRoomOdinID()
+{
+	LL_DBG(this, "AMHGameState::OnRep_VoiceRoomOdinID : VoiceRoomOdinID is {0}", VoiceRoomOdinID);
+}
+
+FVoidCoroutine AMHGameState::WaitForVoiceRoomOdinID(FLatentActionInfo LatentInfo)
+{
+	LL_DBG(this, "AMHGameState::WaitForVoiceRoomOdinID : Waiting for VoiceRoomOdinID to be set");
+	while (VoiceRoomOdinID == FGuid())
+	{
+		
+		co_await UE5Coro::Latent::NextTick();
+	}
+	co_return;
 }
 

@@ -50,14 +50,3 @@ void UMHAudioSubsystem::PlayerOdinIDDestroyed(FGuid Guid)
 	OdinIDs.Remove(Guid);
 	NumberOfConnectedPlayers--;
 }
-
-void UMHAudioSubsystem::CleanRoomId()
-{
-	if (VoiceRoomId == -1)
-	{
-		LL_DBG(this, "Room id already cleaned");
-		return;
-	}
-	VoiceRoomId = -1;
-	LL_DBG(this, "Room id cleaned");
-}

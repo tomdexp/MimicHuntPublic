@@ -55,6 +55,12 @@ public:
 	virtual void AddPlayerState(APlayerState* PlayerState) override;
 	virtual void RemovePlayerState(APlayerState* PlayerState) override;
 	
-	UPROPERTY(Replicated, BlueprintReadOnly, Category = "Online")
-	int32 VoiceRoomId = -1;
+	UPROPERTY(ReplicatedUsing=OnRep_VoiceRoomOdinID, BlueprintReadOnly, Category = "Online")
+	FGuid VoiceRoomOdinID;
+
+	UFUNCTION()
+	void OnRep_VoiceRoomOdinID();
+
+	UFUNCTION(BlueprintCallable, meta = (Latent, LatentInfo = LatentInfo))
+	FVoidCoroutine WaitForVoiceRoomOdinID(FLatentActionInfo LatentInfo);
 };

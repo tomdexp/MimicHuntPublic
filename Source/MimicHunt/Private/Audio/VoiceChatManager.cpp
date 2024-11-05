@@ -2,6 +2,8 @@
 
 #include "EngineUtils.h"
 #include "Audio/MHAudioSubsystem.h"
+#include "Core/MHGameMode.h"
+#include "Core/MHGameState.h"
 #include "Core/MHPlayerController.h"
 #include "Core/MHPlayerState.h"
 #include "GameFramework/GameStateBase.h"
@@ -15,12 +17,20 @@ AVoiceChatManager::AVoiceChatManager()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-void AVoiceChatManager::BeginPlay()
+void AVoiceChatManager::BeginPlay() // Voice chat manager only exist on the server
 {
 	Super::BeginPlay();
+	
 	if (!VoiceChatBlueprint)
 	{
 		LL_WRN(this, "AVoiceChatManager::BeginPlay : VoiceChatBlueprint is nullptr, cannot spawn voice chat actors");
+	}
+	if (AMHGameState* GameState = GetWorld()->GetGameState<AMHGameState>())
+	{
+		LL_DBG(this, "AVoiceChatManager::BeginPlay : Generating VoiceRoomOdinID...");
+		GameState->VoiceRoomOdinID = FGuid::NewGuid();
+		GameState->OnRep_VoiceRoomOdinID();
+		LL_DBG(this, "AVoiceChatManager::BeginPlay : VoiceRoomOdinID generated : {0}", GameState->VoiceRoomOdinID);
 	}
 }
 

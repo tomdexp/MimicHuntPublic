@@ -32,12 +32,7 @@ public:
 	
 	void PlayerOdinIDCreated(FGuid Guid);
 	void PlayerOdinIDDestroyed(FGuid Guid);
-
-	UPROPERTY()
-	int32 VoiceRoomId = -1;
-
-	UFUNCTION(BlueprintCallable, Category = "Audio")
-	void CleanRoomId();
+	
 
 	UPROPERTY(BlueprintReadWrite, Category = "Audio|VoiceChat")
 	bool bIsInSpectatorVoiceChat = false;
