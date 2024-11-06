@@ -3,6 +3,7 @@
 #include "Mimic/Mimic.h"
 
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Mimic/MimicCompositing/FurnitureJoint.h"
 #include "Net/UnrealNetwork.h"
 #include "Utils/LLog.h"
@@ -20,6 +21,8 @@ AMimic::AMimic()
 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	bReplicates=true;
+	GetCharacterMovement()->SetIsReplicated(true);
+	GetCapsuleComponent()->SetIsReplicated(true);
 }
 
 // Called when the game starts or when spawned
@@ -39,7 +42,7 @@ void AMimic::OnConstruction(const FTransform& Transform)
 	TSet<UActorComponent*> components=GetComponents();
 
 	//We iterate a first time to create an map of all the furniture chunks by name, same for attachments and find the root to make it invisible
-	//We use the occasion to set the collision right
+	//We use the occasion to set the collision right and get the capsule component in a non const manner
 	TMap<FString, USceneComponent*> attachmentsMapByName=TMap<FString, USceneComponent*>();
 	TMap<FString, UStaticMeshComponent*> staticMeshMapByName=TMap<FString,UStaticMeshComponent*>();
 	
@@ -55,8 +58,9 @@ void AMimic::OnConstruction(const FTransform& Transform)
 		auto staticMeshComponent =Cast<UStaticMeshComponent>(component);
 
 		//The root is a static mesh component, we can't really replace it easily so we just make it invisible
-		if (componentName == "ROOT")
+		if (componentName.Left(4) == "ROOT")
 		{
+			Root=staticMeshComponent;
 			staticMeshComponent->SetStaticMesh(nullptr);
 			staticMeshComponent->SetRelativeLocation(FVector(0, 0, -GetSimpleCollisionHalfHeight()),false,nullptr,ETeleportType::TeleportPhysics);
 			continue;
@@ -107,6 +111,7 @@ void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 void AMimic::MimicBirth()
 {
 	OnMimicBirthEvent();
+	ensure(Root!=nullptr);
 	OnMimicBirthDelegate.Broadcast();
 	
 	if(!HasAuthority())
@@ -116,7 +121,6 @@ void AMimic::MimicBirth()
 		if(!ChosenOrgans.IsEmpty())
 		{
 			OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
-			UE_LOG(LogTemp, Log,TEXT("PORDRACK Case !Hasauthority and !IsEmpty for %s"),*GetName());
 			MimicSleep();
 		}
 		return;
@@ -128,9 +132,9 @@ void AMimic::MimicBirth()
 void AMimic::MimicWake()
 {
 	OnMimicWakeDelegate.Broadcast();
-	GetCapsuleComponent()->SetCapsuleSize(CachedCapsuleRadius,CachedCapsuleHalfHeight);
-	
+	ActivateCapsule();
 	OnMimicWakeEvent();
+	
 	if(!HasAuthority()) return;
 	IsAwake=true;
 }
@@ -138,24 +142,35 @@ void AMimic::MimicWake()
 void AMimic::MimicSleep()
 {
 	OnMimicSleepDelegate.Broadcast();
-	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
-	//GetCapsuleComponent()->SetCollisionEnabled()
-	GetCapsuleComponent()->SetCapsuleSize(0,1);
-	
+	DeactivateCapsule();
 	OnMimicSleepEvent();
-	if(!HasAuthority())
-	{
-		UE_LOG(LogTemp, Log,TEXT("PORDRACK Sleep %s"),*GetName());
-		return;
-	};
+	
+	if(!HasAuthority())return;
 	IsAwake=false;
 }
+
+const float CAPSULE_SLEEP_HALF_HEIGHT=1; 
+void AMimic::DeactivateCapsule()
+{
+	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
+	GetCapsuleComponent()->SetCapsuleSize(0,CAPSULE_SLEEP_HALF_HEIGHT);
+	GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_Yes;
+	Root->SetRelativeLocation(FVector(0, 0, -CAPSULE_SLEEP_HALF_HEIGHT),false,nullptr,ETeleportType::TeleportPhysics);
+}
+
+void AMimic::ActivateCapsule()
+{
+	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
+	GetCapsuleComponent()->SetCapsuleSize(CachedCapsuleRadius,CachedCapsuleHalfHeight);
+	GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_No;
+	Root->SetRelativeLocation(FVector(0, 0, -CachedCapsuleHalfHeight),false,nullptr,ETeleportType::TeleportPhysics);
+}
+
 
 void AMimic::OnRep_ChosenOrgans()
 {
 	//MimicBirth();
 	OnMimicChoseOrgansDelegate.Broadcast(ChosenOrgans);
-	UE_LOG(LogTemp, Log,TEXT("PORDRACK Case !Hasauthority and OnRepChoseOrgans for %s"),*GetName());
 	MimicSleep();
 }
 

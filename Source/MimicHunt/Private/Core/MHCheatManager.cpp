@@ -195,6 +195,50 @@ void UMHCheatManager::SleepMimic()
     }
 }
 
+void UMHCheatManager::PossessCharacter()
+{
+    APlayerController* PlayerController = GetPlayerController();
+    if (PlayerController)
+    {
+        FVector Location;
+        FRotator Rotation;
+        PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+        FVector End = Location + (Rotation.Vector() * 1000.0f);
+        FHitResult HitResult;
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(PlayerController->GetPawn());
+
+        // Set the sphere radius for the trace
+        float SphereRadius = 5.0f;  // Adjust the radius as needed
+
+        // Perform a sphere trace
+        if (GetWorld()->SweepSingleByProfile(HitResult, Location, End, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(SphereRadius), Params))
+        {
+            // Check if we hit an actor and print its name
+            if (AActor* HitActor = HitResult.GetActor())
+            {
+                UE_LOG(LogTemp, Log, TEXT("Hit Actor: %s"), *HitActor->GetName());
+                
+                ACharacter* Character = Cast<ACharacter>(HitActor);
+                if (Character)
+                {
+                    PlayerController->Possess(Character);
+                    UE_LOG(LogTemp, Log, TEXT("Called Possess on: %s"), *Character->GetName());
+                }
+                else
+                {
+                    UE_LOG(LogTemp, Warning, TEXT("Hit actor is not of type ACharacter"));
+                }
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("No Actor hit in sphere trace"));
+        }
+    }
+}
+
 void UMHCheatManager::SpawnActorWithLineTrace(TSubclassOf<AActor> ActorClass)
 {
     APlayerController* PlayerController = GetPlayerController();

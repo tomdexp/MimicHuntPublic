@@ -40,6 +40,9 @@ public:
 	UFUNCTION(Exec)
 	void SleepMimic();
 
+	UFUNCTION(Exec)
+	void PossessCharacter();
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "CheatManager")
 	TSubclassOf<AActor> PlayerCharacterClass;
 

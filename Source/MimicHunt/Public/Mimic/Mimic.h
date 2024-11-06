@@ -71,10 +71,14 @@ protected:
 	FChosenOrgansList ChosenOrgans;
 	//TempChosenOrgans isn't replicated, when the time is right, we copy it to chosen organs and it gets replicated
 	FChosenOrgansList TempChosenOrgans;
+	void DeactivateCapsule();
+	void ActivateCapsule();
 	UPROPERTY()
 	int CachedCapsuleRadius;
 	UPROPERTY()
 	int CachedCapsuleHalfHeight;
+	UPROPERTY()
+	USceneComponent* Root;
 
 	UFUNCTION()
 	void OnRep_IsAwake();
