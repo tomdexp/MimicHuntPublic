@@ -32,7 +32,8 @@ public class MimicHunt : ModuleRules
 			"SubobjectDataInterface",
 			"Odin",
             "OdinLibrary",
-            "AkAudio"
+            "AkAudio",
+            "GameplayDebugger",
         });
 	}
 }

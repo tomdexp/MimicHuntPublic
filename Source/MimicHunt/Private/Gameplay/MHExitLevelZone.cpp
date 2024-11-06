@@ -25,6 +25,12 @@ AMHExitLevelZone::AMHExitLevelZone()
 	BoxTriggerComponent->OnComponentEndOverlap.AddDynamic(this, &AMHExitLevelZone::OnEndOverlap);
 }
 
+void AMHExitLevelZone::GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+	DOREPLIFETIME(AMHExitLevelZone, bIsActivated);
+}
+
 void AMHExitLevelZone::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
@@ -72,6 +78,11 @@ void AMHExitLevelZone::OnEndOverlap(UPrimitiveComponent* OverlappedComponent, AA
 		LL_DBG(this, "AMHExitLevelZone::OnEndOverlap : Player {0} left the zone", Player->GetPlayerState()->GetPlayerName());
 		NumberOfPlayersInsideZone = PlayersInsideZone.Num();
 	}
+}
+
+void AMHExitLevelZone::OnRep_bIsActivated()
+{
+	LL_DBG(this, "AMHExitLevelZone::OnRep_bIsActivated : bIsActivated = {0}", bIsActivated);
 }
 
 UE5Coro::TCoroutine<> AMHExitLevelZone::ExitLevelCoroutine()

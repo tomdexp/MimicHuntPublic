@@ -10,7 +10,9 @@ class UBoxComponent;
 
 /**
  *  A zone that the players has to reach to exit the level
- *  This zone can only activate if all living players are inside it
+ *  This exit can only be confirmed if all living players are inside it
+ *  To activate the zone, a player has to interact with the door
+ *  This is managed in another class
  */
 UCLASS(Blueprintable)
 class MIMICHUNT_API AMHExitLevelZone : public AActor
@@ -20,6 +22,7 @@ class MIMICHUNT_API AMHExitLevelZone : public AActor
 public:
 	AMHExitLevelZone();
 
+	virtual void GetLifetimeReplicatedProps(TArray<class FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void Tick(float DeltaSeconds) override;
 	
 	UFUNCTION()
@@ -55,8 +58,12 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ExitLevelZone")
 	bool bIsExiting = false;
 
-	UE5Coro::TCoroutine<> ExitLevelCoroutine();
-	
-	std::optional<UE5Coro::TCoroutine<>> ExitCoroutine;
+	UPROPERTY(ReplicatedUsing=OnRep_bIsActivated,VisibleAnywhere, BlueprintReadOnly, Category = "ExitLevelZone")
+	bool bIsActivated = false;
 
+	UFUNCTION()
+	void OnRep_bIsActivated();
+
+	UE5Coro::TCoroutine<> ExitLevelCoroutine();
+	std::optional<UE5Coro::TCoroutine<>> ExitCoroutine;
 };
