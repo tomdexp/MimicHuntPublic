@@ -153,17 +153,25 @@ const float CAPSULE_SLEEP_HALF_HEIGHT=1;
 void AMimic::DeactivateCapsule()
 {
 	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
-	GetCapsuleComponent()->SetCapsuleSize(0,CAPSULE_SLEEP_HALF_HEIGHT);
-	GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_Yes;
+	if(HasAuthority())
+	{
+		SetActorLocation(GetActorLocation()-FVector(0, 0, (GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()+CAPSULE_SLEEP_HALF_HEIGHT)));
+	}
 	Root->SetRelativeLocation(FVector(0, 0, -CAPSULE_SLEEP_HALF_HEIGHT),false,nullptr,ETeleportType::TeleportPhysics);
+	GetCapsuleComponent()->SetCapsuleSize(0,CAPSULE_SLEEP_HALF_HEIGHT);
+	if(HasAuthority())
+	{
+		GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_Yes;
+	}
 }
 
 void AMimic::ActivateCapsule()
 {
 	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
+	//SetActorLocation(GetActorLocation()+FVector(0, 0, (GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()+CAPSULE_SLEEP_HALF_HEIGHT)));
+	Root->SetRelativeLocation(FVector(0, 0, -CachedCapsuleHalfHeight),false,nullptr,ETeleportType::TeleportPhysics);
 	GetCapsuleComponent()->SetCapsuleSize(CachedCapsuleRadius,CachedCapsuleHalfHeight);
 	GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_No;
-	Root->SetRelativeLocation(FVector(0, 0, -CachedCapsuleHalfHeight),false,nullptr,ETeleportType::TeleportPhysics);
 }
 
 
