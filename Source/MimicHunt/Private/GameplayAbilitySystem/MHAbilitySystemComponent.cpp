@@ -1,6 +1,7 @@
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
 #include "AbilitySystemGlobals.h"
 #include "GameplayCueManager.h"
+#include "GameplayAbilitySystem/MHGameplayAbility.h"
 
 
 UMHAbilitySystemComponent::UMHAbilitySystemComponent()

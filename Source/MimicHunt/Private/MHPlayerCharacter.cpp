@@ -250,6 +250,7 @@ void AMHPlayerCharacter::PrimaryActionPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::PrimaryActionPressed");
 	// Send gameplay event to the ability system, the tag is "Event.Ability.SimpleRaycastDamage"
+	// TODO : Cache the event tag
 	FGameplayEventData EventData;
 	EventData.EventTag = FGameplayTag::RequestGameplayTag(FName("Event.Ability.SimpleRaycastDamage"));
 	int32 TriggeredAbilitiesCount = AbilitySystemComponent->HandleGameplayEvent(EventData.EventTag, &EventData);
@@ -274,19 +275,23 @@ void AMHPlayerCharacter::SecondaryActionReleased()
 void AMHPlayerCharacter::InteractPressed()
 {
 	LL_DBG(this, "AMHPlayerCharacter::InteractPressed {0}",GetPlayerState()->GetPlayerId());
-	// Get all players in the GameState
-	for (APlayerState* ps : GetWorld()->GetGameState()->PlayerArray)
-	{
-		if (ps->GetPlayerId() != GetPlayerState()->GetPlayerId())
-		{
-			LL_DBG(this, "AMHPlayerCharacter::InteractPressed : Player {0} is not the same as {1}", ps->GetPlayerId(), GetPlayerState()->GetPlayerId());
-		}
-	}
+	// TODO : Cache the event tag
+	FGameplayTag EventTag = FGameplayTag::RequestGameplayTag(FName("Event.Ability.Interaction.Pressed"));
+	FGameplayEventData EventData;
+	EventData.EventTag = EventTag;
+	int32 TriggeredAbilitiesCount = AbilitySystemComponent->HandleGameplayEvent(EventTag, &EventData);
+	LL_DBG(this, "AMHPlayerCharacter::InteractPressed : TriggeredAbilitiesCount {0}", TriggeredAbilitiesCount);
 }
 
 void AMHPlayerCharacter::InteractReleased()
 {
 	LL_DBG(this, "AMHPlayerCharacter::InteractReleased");
+	// TODO : Cache the event tag
+	FGameplayTag EventTag = FGameplayTag::RequestGameplayTag(FName("Event.Ability.Interaction.Released"));
+	FGameplayEventData EventData;
+	EventData.EventTag = EventTag;
+	int32 TriggeredAbilitiesCount = AbilitySystemComponent->HandleGameplayEvent(EventTag, &EventData);
+	LL_DBG(this, "AMHPlayerCharacter::InteractReleased : TriggeredAbilitiesCount {0}", TriggeredAbilitiesCount);
 }
 
 void AMHPlayerCharacter::ServerSetSprinting_Implementation(bool bNewSprinting)

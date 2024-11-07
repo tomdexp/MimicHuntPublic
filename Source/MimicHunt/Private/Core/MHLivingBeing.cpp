@@ -1,5 +1,7 @@
 #include "Core/MHLivingBeing.h"
 
+#include <ThirdParty/ShaderConductor/ShaderConductor/External/SPIRV-Headers/include/spirv/unified1/spirv.h>
+
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameplayAbilitySystem/MHAbilitySystemComponent.h"
@@ -257,9 +259,46 @@ void AMHLivingBeing::AddCharacterAbilities()
 
 	for (TSubclassOf<UMHGameplayAbility>& StartupAbility : CharacterAbilities)
 	{
-		AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility, 1, INDEX_NONE, this));
-	}
+		FGameplayAbilitySpecHandle AbilityHandle;
+		FTagBoundGameplayAbility TagBoundAbility;
 
+		switch (StartupAbility.GetDefaultObject()->ActivationType)
+		{
+		case EMHAbilityActivationType::Undefined:
+			LL_WRN(this, "AMHLivingBeing::AddCharacterAbilities : Undefined ActivationType for {0}. Please fill in the character's Blueprint.", *GetName());
+			break;
+		case EMHAbilityActivationType::BindToInput:
+			LL_DBG(this, "AMHLivingBeing::AddCharacterAbilities : adding {0} with InputID {1}", *StartupAbility->GetName(), StartupAbility.GetDefaultObject()->ActivationInputType);
+			AbilityHandle = AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility, 1, INDEX_NONE, this));
+			TagBoundAbility.AbilityHandle = AbilityHandle;
+			TagBoundAbility.GameplayTagStart = StartupAbility.GetDefaultObject()->EventTag;
+			TagBoundAbility.GameplayTagCancel = StartupAbility.GetDefaultObject()->EventTagCancel;
+			AbilitySystemComponent->TagBoundAbilities.Add(TagBoundAbility);
+			break;
+		case EMHAbilityActivationType::BindToTagEvent:
+			LL_DBG(this, "AMHLivingBeing::AddCharacterAbilities : adding {0} added with EventTag {1}", *StartupAbility->GetName(), *StartupAbility.GetDefaultObject()->EventTag.ToString());
+			AbilityHandle = AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility, 1, INDEX_NONE, this));
+			break;
+		case EMHAbilityActivationType::None:
+			LL_DBG(this, "AMHLivingBeing::AddCharacterAbilities : adding {0} with None", *StartupAbility->GetName());
+			AbilityHandle = AbilitySystemComponent->GiveAbility(FGameplayAbilitySpec(StartupAbility, 1, INDEX_NONE, this));
+			break;
+		}
+
+		if (StartupAbility.GetDefaultObject()->bActivateOnSpawn)
+		{
+			if (!AbilityHandle.IsValid())
+			{
+				LL_WRN(this, "AMHLivingBeing::AddCharacterAbilities : Failed to activate ability on spawn {0}, because AbilityHandle was null", *StartupAbility->GetName());
+			}
+			else
+			{
+				LL_DBG(this, "AMHLivingBeing::AddCharacterAbilities : activating {0} because bActivateOnSpawn", *StartupAbility->GetName());
+				AbilitySystemComponent->TryActivateAbility(AbilityHandle);
+			}
+		}
+	}
+	
 	AbilitySystemComponent->bCharacterAbilitiesGiven = true;
 }
 

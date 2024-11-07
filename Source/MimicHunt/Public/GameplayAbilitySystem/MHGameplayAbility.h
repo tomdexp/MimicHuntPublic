@@ -8,8 +8,9 @@ UENUM(BlueprintType)
 enum class EMHAbilityActivationType : uint8
 {
 	Undefined,
+	None,
 	BindToInput,
-	BindToTagEvent
+	BindToTagEvent,
 };
 
 UENUM(BlueprintType)
@@ -46,6 +47,12 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToTagEvent", EditConditionHides = true))
 	FGameplayTag EventTag;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToTagEvent", EditConditionHides = true))
+	FGameplayTag EventTagCancel;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility", meta = (EditCondition = "ActivationType == EMHAbilityActivationType::BindToInput", EditConditionHides = true))
 	EMHAbilityActivationInputType ActivationInputType = EMHAbilityActivationInputType::Undefined;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "GameplayAbility")
+	bool bActivateOnSpawn;
 };
