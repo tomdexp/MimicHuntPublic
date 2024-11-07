@@ -60,7 +60,7 @@ void AMimic::OnConstruction(const FTransform& Transform)
 		//The root is a static mesh component, we can't really replace it easily so we just make it invisible
 		if (componentName.Left(4) == "ROOT")
 		{
-			Root=staticMeshComponent;
+			MimicRoot=staticMeshComponent;
 			staticMeshComponent->SetStaticMesh(nullptr);
 			staticMeshComponent->SetRelativeLocation(FVector(0, 0, -GetSimpleCollisionHalfHeight()),false,nullptr,ETeleportType::TeleportPhysics);
 			continue;
@@ -72,8 +72,11 @@ void AMimic::OnConstruction(const FTransform& Transform)
 		//This way the capsule won't collide with the physicked part of the mimic
 		staticMeshComponent->SetCollisionObjectType(ECC_PhysicsBody);
 		staticMeshComponent->UpdateCollisionProfile();
+		staticMeshComponent->SetMassOverrideInKg(NAME_Name,0.001,true);
+		staticMeshComponent->SetMobility(EComponentMobility::Movable);
 		
 		staticMeshMapByName.Add(componentName, staticMeshComponent);
+		//Set all mass to 0
 	}
 
 	//We also change the collision behaviour on the capsule
@@ -97,6 +100,12 @@ void AMimic::OnConstruction(const FTransform& Transform)
 		if(jointComponent->EndAttachPoint==nullptr) continue;
 		jointComponent->ChildChunkComponent=Cast<UStaticMeshComponent>(jointComponent->EndAttachPoint->GetAttachParent());
 	}
+
+	//Mimic was spawned by a furniture and needs to be uplifted
+	if (GetWorld() && GetWorld()->IsGameWorld() && HasAuthority())
+	{
+		SetActorLocation(GetActorLocation()+FVector(0,0,0.5f*CachedCapsuleHalfHeight),0,nullptr,ETeleportType::TeleportPhysics);
+	}
 }
 
 void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -111,7 +120,7 @@ void AMimic::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimePr
 void AMimic::MimicBirth()
 {
 	OnMimicBirthEvent();
-	ensure(Root!=nullptr);
+	ensure(MimicRoot!=nullptr);
 	OnMimicBirthDelegate.Broadcast();
 	
 	if(!HasAuthority())
@@ -157,7 +166,7 @@ void AMimic::DeactivateCapsule()
 	{
 		SetActorLocation(GetActorLocation()-FVector(0, 0, (GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()+CAPSULE_SLEEP_HALF_HEIGHT)));
 	}
-	Root->SetRelativeLocation(FVector(0, 0, -CAPSULE_SLEEP_HALF_HEIGHT),false,nullptr,ETeleportType::TeleportPhysics);
+	MimicRoot->SetRelativeLocation(FVector(0, 0, -CAPSULE_SLEEP_HALF_HEIGHT),false,nullptr,ETeleportType::TeleportPhysics);
 	GetCapsuleComponent()->SetCapsuleSize(0,CAPSULE_SLEEP_HALF_HEIGHT);
 	if(HasAuthority())
 	{
@@ -169,7 +178,7 @@ void AMimic::ActivateCapsule()
 {
 	//We can't just activate/deactivate the capsule because it makes them "disappear" on the other client
 	//SetActorLocation(GetActorLocation()+FVector(0, 0, (GetCapsuleComponent()->GetUnscaledCapsuleHalfHeight()+CAPSULE_SLEEP_HALF_HEIGHT)));
-	Root->SetRelativeLocation(FVector(0, 0, -CachedCapsuleHalfHeight),false,nullptr,ETeleportType::TeleportPhysics);
+	MimicRoot->SetRelativeLocation(FVector(0, 0, -CachedCapsuleHalfHeight),false,nullptr,ETeleportType::TeleportPhysics);
 	GetCapsuleComponent()->SetCapsuleSize(CachedCapsuleRadius,CachedCapsuleHalfHeight);
 	GetCapsuleComponent()->CanCharacterStepUpOn=ECanBeCharacterBase::ECB_No;
 }

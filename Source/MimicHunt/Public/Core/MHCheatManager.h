@@ -33,12 +33,18 @@ public:
 
 	UFUNCTION(Exec)
 	void BirthMimic();
+	UFUNCTION(Exec)
+	void BirthMimicsInRadius(float Radius);
 
 	UFUNCTION(Exec)
 	void WakeMimic();
+	UFUNCTION(Exec)
+	void WakeMimicsInRadius(float Radius);
 
 	UFUNCTION(Exec)
 	void SleepMimic();
+	UFUNCTION(Exec)
+	void SleepMimicsInRadius(float Radius);
 
 	UFUNCTION(Exec)
 	void PossessCharacter();

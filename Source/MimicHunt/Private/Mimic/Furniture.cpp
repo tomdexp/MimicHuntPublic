@@ -3,6 +3,9 @@
 
 #include "Mimic/Furniture.h"
 
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
+
 
 // Sets default values
 AFurniture::AFurniture()
@@ -28,10 +31,10 @@ void AFurniture::Tick(float DeltaTime)
 void AFurniture::TurnToMimic()
 {
 	if(!HasAuthority()) return;
-	UBlueprintGeneratedClass* BlueprintClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
-	FTransform SpawnTransform = this->GetActorTransform();
-	UWorld* World = this->GetWorld();
-	AActor* NewActor = World->SpawnActor<AActor>(FurnitureMimicMap->GetMimic(BlueprintClass), SpawnTransform);
+	UBlueprintGeneratedClass* blueprintClass = Cast<UBlueprintGeneratedClass>(this->GetClass());
+	FTransform spawnTransform = this->GetActorTransform();
+	UWorld* world = this->GetWorld();
+	AActor* newActor = world->SpawnActor<AActor>(FurnitureMimicMap->GetMimic(blueprintClass), spawnTransform);
 	this->Destroy();
 }
 

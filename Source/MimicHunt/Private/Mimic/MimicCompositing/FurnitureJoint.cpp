@@ -137,17 +137,16 @@ void UFurnitureJoint::InitializeJoint()
 	if(ChildChunkComponent!=nullptr && ParentChunkComponent!=nullptr)
 	{
 		ChildChunkComponent->AttachToComponent(ParentChunkComponent,FAttachmentTransformRules::KeepWorldTransform);
-	}
 
-	if (ChildChunkComponent->GetAttachParent() == ParentChunkComponent)
-	{
-		UE_LOG(LogTemp, Log, TEXT("%s is correctly attached to %s."),*ChildChunkComponent->GetName(),*ParentChunkComponent->GetName());
+		if (ChildChunkComponent->GetAttachParent() == ParentChunkComponent)
+		{
+			UE_LOG(LogTemp, Log, TEXT("%s is correctly attached to %s."),*ChildChunkComponent->GetName(),*ParentChunkComponent->GetName());
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Attachment failed."));
+		}
 	}
-	else
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Attachment failed."));
-	}
-	
 	
 	if(ChosenRandomOrgan==nullptr) return;
 	SetChildActorClass(ChosenRandomOrgan);

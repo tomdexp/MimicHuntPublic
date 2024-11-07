@@ -77,8 +77,8 @@ protected:
 	int CachedCapsuleRadius;
 	UPROPERTY()
 	int CachedCapsuleHalfHeight;
-	UPROPERTY()
-	USceneComponent* Root;
+	UPROPERTY(BlueprintReadOnly)
+	USceneComponent* MimicRoot;
 
 	UFUNCTION()
 	void OnRep_IsAwake();

@@ -103,6 +103,41 @@ void UMHCheatManager::BirthMimic()
     }
 }
 
+void UMHCheatManager::BirthMimicsInRadius(float Radius)
+{
+    APlayerController* PlayerController = GetPlayerController();
+    if (PlayerController)
+    {
+        FVector Location;
+        FRotator Rotation;
+        PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+        TArray<FOverlapResult> OverlapResults;
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(PlayerController->GetPawn());
+
+        if (GetWorld()->OverlapMultiByProfile(OverlapResults, Location, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(Radius), Params))
+        {
+            for (const FOverlapResult& Result : OverlapResults)
+            {
+                if (AActor* HitActor = Result.GetActor())
+                {
+                    AFurniture* Furniture = Cast<AFurniture>(HitActor);
+                    if (Furniture)
+                    {
+                        Furniture->TurnToMimic();
+                        UE_LOG(LogTemp, Log, TEXT("Called TurnToMimic on: %s"), *Furniture->GetName());
+                    }
+                }
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("No AFurniture actors found in radius"));
+        }
+    }
+}
+
 void UMHCheatManager::WakeMimic()
 {
     APlayerController* PlayerController = GetPlayerController();
@@ -149,6 +184,44 @@ void UMHCheatManager::WakeMimic()
     }
 }
 
+void UMHCheatManager::WakeMimicsInRadius(float Radius)
+{
+    APlayerController* PlayerController = GetPlayerController();
+    if (PlayerController)
+    {
+        FVector Location;
+        FRotator Rotation;
+        PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+        TArray<FOverlapResult> OverlapResults;
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(PlayerController->GetPawn());
+        if (GetWorld()->OverlapMultiByProfile(OverlapResults, Location, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(Radius), Params))
+        {
+            for (const FOverlapResult& Result : OverlapResults)
+            {
+                if (AActor* HitActor = Result.GetActor())
+                {
+                    AMimic* Mimic = Cast<AMimic>(HitActor);
+                    if (Mimic)
+                    {
+                        Mimic->MimicWake();
+                        UE_LOG(LogTemp, Log, TEXT("Called Wake on: %s"), *Mimic->GetName());
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Actor is not of type AMimic"));
+                    }
+                }
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("No AMimic actors found in radius"));
+        }
+    }
+}
+
 void UMHCheatManager::SleepMimic()
 {
     APlayerController* PlayerController = GetPlayerController();
@@ -191,6 +264,44 @@ void UMHCheatManager::SleepMimic()
         else
         {
             UE_LOG(LogTemp, Log, TEXT("No Actor hit in sphere trace"));
+        }
+    }
+}
+
+void UMHCheatManager::SleepMimicsInRadius(float Radius)
+{
+    APlayerController* PlayerController = GetPlayerController();
+    if (PlayerController)
+    {
+        FVector Location;
+        FRotator Rotation;
+        PlayerController->GetPlayerViewPoint(Location, Rotation);
+
+        TArray<FOverlapResult> OverlapResults;
+        FCollisionQueryParams Params;
+        Params.AddIgnoredActor(PlayerController->GetPawn());
+        if (GetWorld()->OverlapMultiByProfile(OverlapResults, Location, FQuat::Identity, "Pawn", FCollisionShape::MakeSphere(Radius), Params))
+        {
+            for (const FOverlapResult& Result : OverlapResults)
+            {
+                if (AActor* HitActor = Result.GetActor())
+                {
+                    AMimic* Mimic = Cast<AMimic>(HitActor);
+                    if (Mimic)
+                    {
+                        Mimic->MimicSleep();
+                        UE_LOG(LogTemp, Log, TEXT("Called Sleep on: %s"), *Mimic->GetName());
+                    }
+                    else
+                    {
+                        UE_LOG(LogTemp, Warning, TEXT("Actor is not of type AMimic"));
+                    }
+                }
+            }
+        }
+        else
+        {
+            UE_LOG(LogTemp, Log, TEXT("No AMimic actors found in radius"));
         }
     }
 }
