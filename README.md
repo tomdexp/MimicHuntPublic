@@ -91,7 +91,8 @@ front of him in our Game).
 * Has a `float InteractionScanRate = 0.1` that represent the delay between each scan, for example, with 0.1, it will scan every 0,1 second
 * Has a `TMap<FObjectKey, FGameplayAbilitySpecHandle> InteractionAbilityCache` to gather all granted abilities in the radius
 
-INSERT VIDEO HERE
+https://github.com/user-attachments/assets/e0ce93ce-7a91-4f5c-9cd5-af294c7cd4b1
+> The green sphere is the `InteractionScanRange` of the `UAbilityTask_GrantNearbyInteraction`, when an interactable component is detected on an actor, the associated `InteractionAbility` is granted to the player before he can interact with it to compensate the delay when the server grants the ability
 
 ##### UAbilityTask_WaitForInteractableComponentSingleLineTrace
 * Derives from `UAbilityTask`
@@ -99,7 +100,9 @@ INSERT VIDEO HERE
 * Has a float `InteractionScanRate = 0.1` that represent the delay between each scan, for example, with 0.1, it will scan every 0,1 second
 * Has a `DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FInteractableObjectsChangedEvent, UInteractableComponent*, InteractableComponent)` that is used inside the `GA_Interact` to update the current interactable
 
-INSERT VIDEO HERE
+https://github.com/user-attachments/assets/2196abe2-fc0c-4ad8-8dd2-75466f97e4bb
+> Video of the `UAbilityTask_WaitForInteractableComponentSingleLineTrace` scanning for collisions, as you can notice, it has a shorter range than the green sphere.
+
 
 ##### The interaction system inside the engine
 ![GA_Interact - Activate/End Ability](Content/mimichunt-ga-interact-activate-end-ability.png)
@@ -126,6 +129,10 @@ for players to leave the map they have to stay inside the zone for 5 seconds.
 
 ![GA_Interaction_OpenExitDoor - Settings](Content/mimichunt-exit-door-trigger-gameplay-event.png)
 > For the ability to be activated, we setup the ability so that is trigger with gameplay event, for every interaction with a gameplay event called `Event.Ability.Interaction.Activate`
+
+
+
+
 
 ![GA_Interaction_OpenExitDoor - Activate Ability](Content/mimichunt-exit-door-trigger-gameplay-ability-open-exit-door.png)
 > We use the `Event ActivateAbilityFromEvent` instead of the classic `Event ActivateAbility`, here we also deactivate the ability to interact with the door after the 1st time and trigger the Open Door event on the `BP_ExitDoor`
